@@ -1,0 +1,5 @@
+{
+  "$schema_version": "1.0",
+  "description": "Реестр обученных моделей SpectrumAI. Заполняется по мере появления моделей. См. CLAUDE.md §11.",
+  "models": []
+}

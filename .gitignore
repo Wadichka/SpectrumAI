@@ -216,3 +216,115 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+.idea/
+
+# ============================================================
+# SpectrumAI — проектные исключения
+# ============================================================
+
+# --- Данные ---
+# Сырые и обработанные датасеты, выгрузки NIST/SDBS/Coblentz, parquet-файлы
+ml/data/
+ml/outputs/
+ml/experiments/
+*.parquet
+*.arrow
+*.feather
+
+# Карантин «битых» спектров после валидации
+ml/quarantine/
+
+# --- Модели ---
+# Веса моделей не коммитим — только MANIFEST.json и README.md
+models/*.pt
+models/*.pth
+models/*.bin
+models/*.safetensors
+models/*.onnx
+models/*.tar
+models/*.ckpt
+models/checkpoints/
+models/faiss/
+models/embeddings/
+# Исключения — что МОЖНО коммитить:
+!models/MANIFEST.json
+!models/README.md
+!models/.gitkeep
+
+# --- Эксперименты и логи обучения ---
+runs/
+tensorboard/
+tb_logs/
+lightning_logs/
+wandb/
+mlruns/
+mlflow_artifacts/
+*.tfevents.*
+
+# --- Кэш HuggingFace и transformers (на случай локальной выгрузки) ---
+.cache/
+huggingface_cache/
+hf_cache/
+.transformers_cache/
+
+# --- Бэкенд: пользовательские файлы и временные данные ---
+backend/uploads/
+backend/storage/
+backend/instance/
+backend/.pytest_cache/
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# --- Фронтенд ---
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+.pnp.*
+.yarn/
+
+# --- Playwright / E2E ---
+test-results/
+playwright-report/
+playwright/.cache/
+.playwright/
+
+# --- Docker: локальные volumes (если поднимаются bind-mount'ом) ---
+postgres-data/
+redis-data/
+.docker-data/
+docker-volumes/
+
+# --- Конфиги локальной разработки (не для git) ---
+.env.local
+.env.*.local
+docker-compose.override.yml
+# Базовый .env уже исключён выше через "Environments"
+
+# --- Покрытие и отчёты тестов ---
+coverage.json
+coverage-final.json
+junit.xml
+report.html
+
+# --- ОС-мусор ---
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# --- Редакторы / временные файлы ---
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
