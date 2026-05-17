@@ -94,9 +94,7 @@ def tanimoto_matrix(
         if mol is None:
             fingerprints.append(None)
             continue
-        fingerprints.append(
-            AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits)
-        )
+        fingerprints.append(AllChem.GetMorganFingerprintAsBitVect(mol, radius, nBits=n_bits))
     matrix = np.full((n, n), np.nan, dtype=np.float64)
     for i in range(n):
         if fingerprints[i] is None:
