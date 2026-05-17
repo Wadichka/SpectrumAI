@@ -146,8 +146,7 @@
       "title": "Settings"
     },
     "batch": {
-      "title": "Batch processing",
-      "stub": "Placeholder for Stage 14: multi-upload and result table."
+      "title": "Batch processing"
     },
     "not_found": {
       "title": "Page not found",
@@ -219,6 +218,70 @@
     "add_stub": "Manual addition will be available in Stage 14.",
     "load_error": "Failed to load the compound database.",
     "no_name": "—"
+  },
+  "batch": {
+    "title": "Batch processing",
+    "subtitle": "Upload multiple spectra for joint identification (up to 20 files, 50 MB total).",
+    "dropzone": {
+      "idle": "Drop files here or click to select",
+      "dragging": "Release to add files",
+      "formats": "Supported formats: JCAMP-DX (.jdx, .dx), CSV, TXT",
+      "limits": "Up to 20 files, ≤ 50 MB total"
+    },
+    "files": {
+      "title": "Selected files ({{count}})",
+      "empty": "No files selected yet",
+      "columns": {
+        "name": "Name",
+        "size": "Size",
+        "actions": "Actions"
+      },
+      "remove": "Remove",
+      "clear_all": "Clear list"
+    },
+    "button": {
+      "run": "Run batch",
+      "clear": "Clear",
+      "cancel": "Cancel",
+      "export_csv": "Export CSV",
+      "new_batch": "New batch"
+    },
+    "processing": {
+      "title": "Batch processing in progress",
+      "subtitle": "Processing {{count}} files…"
+    },
+    "results": {
+      "title": "Batch results",
+      "empty": "No results",
+      "columns": {
+        "filename": "File",
+        "status": "Status",
+        "top_group": "Top-1 group",
+        "score": "Score",
+        "processing_time": "Time",
+        "actions": "Actions"
+      },
+      "open": "Open",
+      "no_top_group": "—"
+    },
+    "summary": {
+      "total": "Total: {{count}}",
+      "success": "Success: {{count}}",
+      "error": "Errors: {{count}}",
+      "time_ms": "Time: {{ms}} ms"
+    },
+    "status": {
+      "success": "success",
+      "error": "error"
+    },
+    "error": {
+      "none_selected": "Please select at least one file",
+      "too_many_files": "Up to 20 files per batch",
+      "too_large_total": "Total file size exceeds 50 MB",
+      "invalid_extension": "File \"{{name}}\" has an unsupported extension",
+      "network": "Could not reach the server. Check your connection.",
+      "server": "Server returned an error. Please try again."
+    }
   },
   "settings": {
     "title": "Settings",
