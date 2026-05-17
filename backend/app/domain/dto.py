@@ -48,6 +48,16 @@ class CompoundCandidate(BaseModel):
     extra_groups: tuple[str, ...] = Field(default=())
 
 
+class GradCamPayload(BaseModel):
+    """Активационная карта Grad-CAM для одной функциональной группы (§6.10)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    group_code: str
+    group_name: str
+    values: list[float]
+
+
 class IdentificationResult(BaseModel):
     """Полный результат идентификации (DTO API)."""
 
@@ -60,10 +70,12 @@ class IdentificationResult(BaseModel):
     threshold_mode: str
     processing_time_ms: int = Field(ge=0)
     timestamp: datetime
+    gradcam: GradCamPayload | None = None
 
 
 __all__ = [
     "CompoundCandidate",
     "FunctionalGroupPrediction",
+    "GradCamPayload",
     "IdentificationResult",
 ]
