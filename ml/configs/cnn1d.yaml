@@ -1,0 +1,61 @@
+# Конфиг обучения 1D-CNN multi-label классификатора функциональных групп.
+# Источник параметров: глава 6 пояснительной записки (разделы 6.2, 6.3, 6.4,
+# 6.5, 6.8). Длина входа 3601 — по CLAUDE.md §7 (расхождение с §6.2.1, где
+# указано 1801, согласовано: следуем CLAUDE.md).
+
+data:
+  parquet: ml/data/synthetic.parquet
+  spectrum_length: 3601
+  n_labels: 25
+  split:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  augmentation: true
+
+model:
+  # Каждый блок: Conv1d -> BN -> ReLU -> MaxPool1d(2) -> Dropout.
+  # Последний блок (5) без MaxPool/Dropout — вместо них AdaptiveAvgPool1d(1).
+  blocks:
+    - { in_channels: 1,   out_channels: 32,  kernel_size: 11, padding: 5, dropout: 0.10 }
+    - { in_channels: 32,  out_channels: 64,  kernel_size: 9,  padding: 4, dropout: 0.15 }
+    - { in_channels: 64,  out_channels: 128, kernel_size: 7,  padding: 3, dropout: 0.20 }
+    - { in_channels: 128, out_channels: 256, kernel_size: 5,  padding: 2, dropout: 0.25 }
+    - { in_channels: 256, out_channels: 256, kernel_size: 3,  padding: 1, dropout: 0.0  }
+  embedding_dim: 128
+  head_dropout: 0.30
+  n_classes: 25
+
+loss:
+  # type: bce | focal
+  type: bce
+  # pos_weight: auto -> N_neg/N_pos по train (§6.3.2); null -> без весов; list[25] -> вручную.
+  pos_weight: auto
+  pos_weight_cap: 100.0
+  focal:
+    gamma: 2.0
+    alpha: 0.5
+
+optim:
+  optimizer: adamw
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  scheduler: cosine
+  warmup_ratio: 0.05
+
+training:
+  batch_size: 32
+  epochs: 10
+  early_stop_patience: 5
+  # threshold_search: per_class -> поиск порога по grid; fixed -> единый порог.
+  threshold_search: per_class
+  fixed_threshold: 0.5
+  num_workers: 0
+
+seed: 42
+
+output:
+  experiment_root: ml/experiments
+  model_dir: models
+  model_name: ircnn-multilabel
+  model_version: 0.1.0

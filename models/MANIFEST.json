@@ -1,5 +1,20 @@
 {
   "$schema_version": "1.0",
   "description": "Реестр обученных моделей SpectrumAI. Заполняется по мере появления моделей. См. CLAUDE.md §11.",
-  "models": []
+  "models": [
+    {
+      "name": "ircnn-multilabel",
+      "version": "0.1.0",
+      "file": "ircnn-multilabel-0.1.0/best.pt",
+      "phase": 1,
+      "data_source": "synthetic",
+      "trained_at": "2026-05-17",
+      "metrics": {
+        "macro_f1": 0.2174734947688937,
+        "macro_ap": 0.22992954154549655,
+        "hamming_loss": 0.623030303030303
+      },
+      "notes": "Этап 5 фазы 1. Цель — отладка пайплайна, не достижение метрик §6.4.4."
+    }
+  ]
 }

@@ -238,13 +238,13 @@ ml/quarantine/
 
 # --- Модели ---
 # Веса моделей не коммитим — только MANIFEST.json и README.md
-models/*.pt
-models/*.pth
-models/*.bin
-models/*.safetensors
-models/*.onnx
-models/*.tar
-models/*.ckpt
+models/**/*.pt
+models/**/*.pth
+models/**/*.bin
+models/**/*.safetensors
+models/**/*.onnx
+models/**/*.tar
+models/**/*.ckpt
 models/checkpoints/
 models/faiss/
 models/embeddings/

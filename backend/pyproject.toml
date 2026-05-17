@@ -31,6 +31,8 @@ dependencies = [
     "transformers>=4.44",
     "redis>=5.0",
     "structlog>=24.4",
+    "tensorboard>=2.16",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]

@@ -68,6 +68,12 @@ jobs:
       - name: Pytest (ml/)
         run: pytest ml/tests/ -v --cov=ml/pipelines --cov=ml/scripts --cov-report=term-missing
 
+      - name: Build synthetic dataset (for dry-run)
+        run: python ml/scripts/build_synthetic_dataset.py
+
+      - name: Train dry-run (smoke)
+        run: python ml/scripts/train_cnn1d.py --config ml/configs/cnn1d.yaml --device cpu --dry-run
+
   frontend:
     name: Frontend (Node 20)
     runs-on: ubuntu-latest
