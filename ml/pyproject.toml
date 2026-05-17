@@ -1,0 +1,77 @@
+# Каталог ml/ — коллекция скриптов и пайплайнов для обучения и подготовки
+# данных, не устанавливаемый Python-пакет (фаза 1, CLAUDE.md §11). Здесь
+# нет [project]/[build-system] — только конфиг для линтеров, форматтера,
+# mypy и pytest, чтобы правила CLAUDE.md §6 (длина строки 100, набор правил
+# ruff, типизация публичных функций) применялись и к ml/, а не только к
+# backend/. Эталон конфигурации — backend/pyproject.toml.
+
+# -----------------------------------------------------------------------------
+# Ruff: линтер + форматтер. Длина строки 100 — по CLAUDE.md §6.
+# -----------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific
+]
+# RUF001/RUF002/RUF003 — предупреждения о визуально похожих кириллических
+# символах в строках/docstrings. По CLAUDE.md §6 docstrings и комментарии на
+# русском намеренно, поэтому такие совпадения регулярны и не являются ошибкой.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# -----------------------------------------------------------------------------
+# Black: резервный форматтер (стек CLAUDE.md §4 включает black).
+# -----------------------------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+# -----------------------------------------------------------------------------
+# Mypy: для ml/ strict-режим избыточен — это эксперименты и скрипты, а не
+# доменное ядро (CLAUDE.md §6 требует strict только для backend/app).
+# -----------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_unused_configs = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "rdkit.*",
+    "scipy.*",
+    "pandas.*",
+    "torch.*",
+    "transformers.*",
+    "sklearn.*",
+    "pyarrow.*",
+    "jcamp.*",
+]
+ignore_missing_imports = true
+
+# -----------------------------------------------------------------------------
+# Pytest.
+# -----------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers"

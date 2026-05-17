@@ -25,6 +25,9 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+import structlog
+
+log = structlog.get_logger(__name__)
 
 # Скрипт должен импортироваться как из ml/scripts/, так и из тестов; добавляем
 # корень ml/ в sys.path для гарантированного импорта pipelines.
@@ -390,10 +393,14 @@ def build(output: Path, *, seed: int = 42) -> pd.DataFrame:
     output.parent.mkdir(parents=True, exist_ok=True)
     frame.to_parquet(output, engine="pyarrow", index=False)
 
-    print(f"saved {len(frame)} rows to {output}")
-    print("group coverage (min 5 expected):")
-    for group in FUNCTIONAL_GROUPS:
-        print(f"  {group.code} {group.name:>22s}: {group_coverage.get(group.name, 0):>3d}")
+    coverage = {group.name: group_coverage.get(group.name, 0) for group in FUNCTIONAL_GROUPS}
+    log.info(
+        "synthetic_dataset_built",
+        path=str(output),
+        rows=len(frame),
+        groups=len(FUNCTIONAL_GROUPS),
+        coverage=coverage,
+    )
     return frame
 
 
@@ -409,7 +416,19 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def _configure_logging() -> None:
+    """Минимальная настройка structlog для запуска скрипта из CLI."""
+    structlog.configure(
+        processors=[
+            structlog.processors.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.dev.ConsoleRenderer(),
+        ]
+    )
+
+
 def main() -> None:
+    _configure_logging()
     args = _parse_args()
     build(args.output, seed=args.seed)
 

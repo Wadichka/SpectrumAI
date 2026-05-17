@@ -40,6 +40,34 @@ jobs:
       - name: Pytest
         run: pytest -v --cov=app --cov-report=term-missing
 
+  ml:
+    name: ML pipelines (Python 3.11)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - name: Install dependencies (reuse backend stack)
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff lint (ml/)
+        run: ruff check ml/ --config ml/pyproject.toml
+
+      - name: Ruff format check (ml/)
+        run: ruff format --check ml/ --config ml/pyproject.toml
+
+      - name: Pytest (ml/)
+        run: pytest ml/tests/ -v --cov=ml/pipelines --cov=ml/scripts --cov-report=term-missing
+
   frontend:
     name: Frontend (Node 20)
     runs-on: ubuntu-latest
