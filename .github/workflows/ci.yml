@@ -74,6 +74,11 @@ jobs:
       - name: Train dry-run (smoke)
         run: python ml/scripts/train_cnn1d.py --config ml/configs/cnn1d.yaml --device cpu --dry-run
 
+      - name: Train contrastive dry-run (tiny-bert)
+        env:
+          SPECTRUMAI_USE_TINY_BERT: "1"
+        run: python ml/scripts/train_contrastive.py --config ml/configs/contrastive.yaml --device cpu --dry-run
+
   frontend:
     name: Frontend (Node 20)
     runs-on: ubuntu-latest

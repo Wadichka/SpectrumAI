@@ -1,23 +1,28 @@
-"""Loss-функции для multi-label классификации (§6.3 главы 6).
+"""Loss-функции SpectrumAI (§6.3, §6.6.4 главы 6).
 
-Реализованы две стратегии:
+Реализованы три стратегии:
 
 - **Взвешенная BCE** (§6.3.2) — `nn.BCEWithLogitsLoss` с покласовыми весами
   ``pos_weight = N_neg / N_pos`` для борьбы с дисбалансом редких функциональных
   групп. Значения ограничиваются сверху, чтобы редкие классы не давили loss.
 - **Focal Loss** (§6.3.3) — `α · (1 - p_t)^γ · BCE`, по умолчанию γ=2, α=0.5.
   Подходит, если после взвешенной BCE recall редких групп остаётся низким.
+- **Symmetric InfoNCE** (§6.6.4) — симметризованный контрастный лосс для
+  двухбашенной схемы (Этап 6). Температура τ обучаема через `log_temperature`
+  (инициализация log(1/0.07) — как в CLIP).
 
-Выбор стратегии — через секцию ``loss`` в `cnn1d.yaml`.
+Выбор стратегии — через секцию ``loss`` в YAML-конфиге.
 """
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import torch
+import torch.nn.functional as F  # noqa: N812
 from torch import Tensor, nn
 
 
@@ -80,6 +85,58 @@ class FocalLoss(nn.Module):
         return focal.mean()
 
 
+class SymmetricInfoNCE(nn.Module):
+    """Симметричный InfoNCE для двухбашенной схемы (§6.6.4).
+
+    Принимает два набора эмбеддингов формы ``(B, D)``. Эмбеддинги должны быть
+    предварительно L2-нормированы (это гарантируют ``SpectrumTower`` и
+    ``MoleculeTower``). Внутри формула:
+
+        S = z_a @ z_b.T * exp(log_temperature)
+        L = 0.5 * (CE(S, arange(B)) + CE(S.T, arange(B)))
+
+    При ``learnable=True`` (по умолчанию) параметр ``log_temperature``
+    обучается. Эквивалентная τ доступна как ``self.temperature``.
+    """
+
+    def __init__(
+        self,
+        initial_temperature: float = 0.07,
+        learnable: bool = True,
+    ) -> None:
+        super().__init__()
+        if initial_temperature <= 0.0:
+            raise ValueError("initial_temperature должна быть положительной")
+        # log_temperature := log(1 / τ); τ = exp(-log_temperature).
+        init_log = math.log(1.0 / float(initial_temperature))
+        log_param = torch.tensor(init_log, dtype=torch.float32)
+        if learnable:
+            self.log_temperature = nn.Parameter(log_param)
+        else:
+            self.register_buffer("log_temperature", log_param)
+        # Верхняя граница на 1/τ — иначе при обучении τ может скатываться в 0.
+        self._max_log_temperature = math.log(100.0)
+
+    @property
+    def temperature(self) -> float:
+        return float(torch.exp(-self.log_temperature).detach())
+
+    def forward(self, z_a: Tensor, z_b: Tensor) -> Tensor:
+        if z_a.shape != z_b.shape:
+            raise ValueError(
+                f"формы z_a {tuple(z_a.shape)} и z_b {tuple(z_b.shape)} должны совпадать"
+            )
+        if z_a.ndim != 2:
+            raise ValueError(f"ожидался тензор ранга 2 (B, D), получено {z_a.shape}")
+        log_t = self.log_temperature.clamp(max=self._max_log_temperature)
+        scale = torch.exp(log_t)
+        logits = z_a @ z_b.transpose(0, 1) * scale
+        targets = torch.arange(z_a.shape[0], device=z_a.device)
+        loss_ab = F.cross_entropy(logits, targets)
+        loss_ba = F.cross_entropy(logits.transpose(0, 1), targets)
+        return 0.5 * (loss_ab + loss_ba)
+
+
 def make_loss(loss_cfg: dict[str, Any], *, pos_weight: Tensor | None) -> nn.Module:
     """Создаёт loss-модуль по dict-конфигу (секция ``loss`` в YAML)."""
     loss_type = str(loss_cfg.get("type", "bce")).lower()
@@ -91,7 +148,13 @@ def make_loss(loss_cfg: dict[str, Any], *, pos_weight: Tensor | None) -> nn.Modu
             gamma=float(params.get("gamma", 2.0)),
             alpha=float(params.get("alpha", 0.5)),
         )
+    if loss_type == "infonce":
+        params = loss_cfg.get("infonce", {}) or {}
+        return SymmetricInfoNCE(
+            initial_temperature=float(params.get("initial_temperature", 0.07)),
+            learnable=bool(params.get("learnable", True)),
+        )
     raise ValueError(f"неизвестный тип loss: {loss_type!r}")
 
 
-__all__ = ["FocalLoss", "compute_pos_weight", "make_loss"]
+__all__ = ["FocalLoss", "SymmetricInfoNCE", "compute_pos_weight", "make_loss"]

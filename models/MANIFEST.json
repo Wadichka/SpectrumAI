@@ -15,6 +15,37 @@
         "hamming_loss": 0.623030303030303
       },
       "notes": "Этап 5 фазы 1. Цель — отладка пайплайна, не достижение метрик §6.4.4."
+    },
+    {
+      "name": "ircnn-contrastive",
+      "version": "0.2.0",
+      "file": "ircnn-contrastive-0.2.0/best.pt",
+      "phase": 1,
+      "data_source": "synthetic",
+      "trained_at": "2026-05-17",
+      "metrics": {
+        "macro_f1": 0.214058520335074,
+        "top1": 0.09090909361839294,
+        "top5": 0.24242424964904785,
+        "mrr": 0.19661495089530945,
+        "temperature": 0.07050805538892746
+      },
+      "notes": "Этап 6 фазы 1. Двухбашенная схема, BCE + InfoNCE, синтетика."
+    },
+    {
+      "name": "faiss-index-ircnn-contrastive",
+      "version": "0.2.0",
+      "type": "faiss_index",
+      "file": "faiss/ircnn-contrastive-0.2.0/index.faiss",
+      "phase": 1,
+      "data_source": "synthetic",
+      "built_at": "2026-05-17",
+      "source_checkpoint": "models/ircnn-contrastive-0.2.0/best.pt",
+      "metrics": {
+        "n_vectors": 220,
+        "dim": 128
+      },
+      "notes": "Этап 6 фазы 1. IndexFlatIP на L2-нормированных молекулярных эмбеддингах."
     }
   ]
 }

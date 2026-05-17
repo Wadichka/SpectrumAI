@@ -22,9 +22,14 @@ from torch.utils.data import Dataset
 
 SpectrumTransform = Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]]
 
+# Тип элемента датасета: (spectrum, labels) либо (spectrum, labels, smiles)
+# в зависимости от ``return_smiles``. PyTorch DataLoader корректно собирает
+# батч из тензоров и список строк через стандартный collate_fn.
+DatasetItem = tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, torch.Tensor, str]
 
-class SpectraDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
-    """ИК-спектры с multi-hot метками для обучения 1D-CNN.
+
+class SpectraDataset(Dataset[DatasetItem]):
+    """ИК-спектры с multi-hot метками для обучения 1D-CNN и контрастной схемы.
 
     Args:
         parquet_path: путь к parquet-файлу.
@@ -32,6 +37,9 @@ class SpectraDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
             Применяется к каждому спектру в ``__getitem__``.
         spectrum_length: ожидаемая длина вектора спектра (3601 по умолчанию).
         n_labels: размерность multi-hot метки (25 функциональных групп).
+        return_smiles: если True, элемент возвращается как
+            ``(spectrum, labels, smiles)`` — нужно для contrastive-обучения
+            (Этап 6). По умолчанию False, обратная совместимость с Этапами 4/5.
     """
 
     def __init__(
@@ -41,11 +49,13 @@ class SpectraDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
         transform: SpectrumTransform | None = None,
         spectrum_length: int = 3601,
         n_labels: int = 25,
+        return_smiles: bool = False,
     ) -> None:
         self._frame: pd.DataFrame = pd.read_parquet(parquet_path, engine="pyarrow")
         self._transform = transform
         self._spectrum_length = spectrum_length
         self._n_labels = n_labels
+        self._return_smiles = return_smiles
 
         missing = {"spectrum", "labels", "smiles", "compound_id"} - set(self._frame.columns)
         if missing:
@@ -54,7 +64,7 @@ class SpectraDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
     def __len__(self) -> int:
         return len(self._frame)
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> DatasetItem:
         row = self._frame.iloc[idx]
         spectrum = np.asarray(row["spectrum"], dtype=np.float64)
         if spectrum.size != self._spectrum_length:
@@ -70,6 +80,8 @@ class SpectraDataset(Dataset[tuple[torch.Tensor, torch.Tensor]]):
 
         spectrum_tensor = torch.from_numpy(spectrum.astype(np.float32))
         labels_tensor = torch.from_numpy(labels)
+        if self._return_smiles:
+            return spectrum_tensor, labels_tensor, str(row["smiles"])
         return spectrum_tensor, labels_tensor
 
     def get_metadata(self, idx: int) -> dict[str, object]:
