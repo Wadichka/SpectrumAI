@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: theme("colors.background");
+  color: theme("colors.ink");
+  font-feature-settings: "cv11" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Видимый focus-ring для клавиатурной навигации (WCAG 2.1 AA, §7.8). */
+:focus-visible {
+  outline: 2px solid theme("colors.primary.DEFAULT");
+  outline-offset: 2px;
+}
+
+code,
+.font-mono {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}

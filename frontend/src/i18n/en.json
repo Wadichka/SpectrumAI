@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "SpectrumAI",
+    "tagline": "Organic compound identification by IR spectra"
+  },
+  "nav": {
+    "identify": "Identify",
+    "results": "Results",
+    "batch": "Batch",
+    "history": "History",
+    "database": "Compound database",
+    "settings": "Settings"
+  },
+  "header": {
+    "language": "Language",
+    "language_short": "EN"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Error",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back"
+  },
+  "button": {
+    "primary": "Action",
+    "submit": "Submit"
+  },
+  "page": {
+    "identify": {
+      "title": "Identify",
+      "stub": "Placeholder for Stage 11: drag-and-drop, file selection, pipeline launch."
+    },
+    "results": {
+      "title": "Identification results",
+      "stub": "Placeholder for Stage 12: spectrum chart, Grad-CAM, candidates."
+    },
+    "compound": {
+      "title": "Compound card",
+      "stub": "Placeholder for Stage 12: structural formula, metadata, spectra comparison."
+    },
+    "history": {
+      "title": "Request history",
+      "stub": "Placeholder for Stage 13: history table, filters, pagination."
+    },
+    "database": {
+      "title": "Compound database",
+      "stub": "Placeholder for Stage 13: search, functional group filter."
+    },
+    "settings": {
+      "title": "Settings",
+      "stub": "Placeholder for Stage 13: preprocessing and identification parameters."
+    },
+    "batch": {
+      "title": "Batch processing",
+      "stub": "Placeholder for Stage 14: multi-upload and result table."
+    },
+    "not_found": {
+      "title": "Page not found",
+      "description": "The requested route does not exist."
+    }
+  }
+}

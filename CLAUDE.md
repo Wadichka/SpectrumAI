@@ -111,7 +111,8 @@
 - `React 18` + `TypeScript 5`
 - Сборка: `Vite`
 - Стилизация: `tailwindcss`
-- Состояние: `pinia`
+- Состояние: `zustand` (замена pinia, которая является Vue-библиотекой и не работает в React; согласовано с автором на Этапе 10). Persist-middleware из `zustand/middleware` для настроек.
+- Генерация TypeScript-типов из OpenAPI: `openapi-typescript` (скрипт `npm run openapi`).
 - HTTP: `axios`
 - Графики: `plotly.js` (+ `react-plotly.js`)
 - Иконки: `lucide-react`
