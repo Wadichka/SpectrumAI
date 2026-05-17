@@ -25,12 +25,14 @@ __all__ = [
     "CompoundDetailResponse",
     "CompoundSummary",
     "FunctionalGroupPrediction",
+    "FunctionalGroupResponse",
     "GradCamPayload",
     "HealthResponse",
     "HistoryEntryResponse",
     "IdentificationResponse",
     "PaginatedCompoundsResponse",
     "PaginatedHistoryResponse",
+    "SettingsResponse",
     "SpectrumCreatedResponse",
 ]
 
@@ -137,3 +139,33 @@ class SpectrumCreatedResponse(BaseModel):
     spectrum_id: int
     compound_id: int
     status: Literal["created"]
+
+
+class SettingsResponse(BaseModel):
+    """Параметры идентификации и предобработки (Этап 13, UC-07).
+
+    Phase 1: persistence — только localStorage клиента. PATCH-эндпоинт делает
+    echo (валидация + 200 с тем же payload), реальная запись в БД — phase 2.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    language: Literal["ru", "en"] = "ru"
+    include_gradcam: bool = True
+    top_k: int = Field(default=10, ge=1, le=50)
+    threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    baseline_method: Literal["asls", "none"] = "asls"
+    normalize_method: Literal["snv", "minmax"] = "snv"
+    savgol_window: int = Field(default=11, ge=3, le=51)
+    savgol_polyorder: int = Field(default=2, ge=0, le=5)
+
+
+class FunctionalGroupResponse(BaseModel):
+    """Справочная запись функциональной группы (Этап 13)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    code: str
+    name: str
+    description: str | None = None
+    characteristic_bands: str | None = None

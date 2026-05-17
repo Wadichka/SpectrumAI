@@ -11,6 +11,7 @@ import ProcessingStepper from "@/components/identify/ProcessingStepper";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import { useIdentificationStore } from "@/stores/useIdentificationStore";
+import { useSettingsStore } from "@/stores/useSettingsStore";
 import { useUploadStore } from "@/stores/useUploadStore";
 
 const ACCEPT_EXTENSIONS = [".jdx", ".dx", ".csv", ".txt"];
@@ -42,8 +43,10 @@ export default function IdentificationPage() {
   const setLastResponse = useIdentificationStore((s) => s.setLastResponse);
   const resetIdentification = useIdentificationStore((s) => s.reset);
 
-  const [topK, setTopK] = useState(10);
-  const [includeGradcam, setIncludeGradcam] = useState(true);
+  const topK = useSettingsStore((s) => s.topK);
+  const includeGradcam = useSettingsStore((s) => s.includeGradcam);
+  const setTopK = useSettingsStore((s) => s.setTopK);
+  const setIncludeGradcam = useSettingsStore((s) => s.setIncludeGradcam);
   const [currentStep, setCurrentStep] = useState(0);
   const [showCancel, setShowCancel] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);

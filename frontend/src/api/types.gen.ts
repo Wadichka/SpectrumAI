@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** �������� ����������������� */
+        /** Проверка работоспособности */
         get: operations["health_api_v1_health_get"];
         put?: never;
         post?: never;
@@ -30,7 +30,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** ������������� ������� (UC-01) */
+        /** Идентификация спектра (UC-01) */
         post: operations["identify_api_v1_identify_post"];
         delete?: never;
         options?: never;
@@ -47,7 +47,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** �������� ������������� (UC-06) */
+        /** Пакетная идентификация (UC-06) */
         post: operations["identify_batch_api_v1_identify_batch_post"];
         delete?: never;
         options?: never;
@@ -62,7 +62,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** ����� ���������� � ��������� ���� (UC-04) */
+        /** Поиск соединений в локальной базе (UC-04) */
         get: operations["list_compounds_api_v1_compounds_get"];
         put?: never;
         post?: never;
@@ -79,7 +79,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** SVG ����������� ������� �� SMILES (��� ��, phase 1) */
+        /** SVG структурной формулы по SMILES (без БД, phase 1) */
         get: operations["render_structure_by_smiles_api_v1_compounds_structure_svg_get"];
         put?: never;
         post?: never;
@@ -96,7 +96,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** �������� ���������� (UC-02) */
+        /** Карточка соединения (UC-02) */
         get: operations["get_compound_api_v1_compounds__compound_id__get"];
         put?: never;
         post?: never;
@@ -113,7 +113,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** SVG ����������� ������� (CLAUDE.md �7) */
+        /** SVG структурной формулы (CLAUDE.md §7) */
         get: operations["render_structure_api_v1_compounds__compound_id__structure_svg_get"];
         put?: never;
         post?: never;
@@ -132,7 +132,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** �������� ������ � ��������� ���� (UC-03) */
+        /** Добавить спектр в локальную базу (UC-03) */
         post: operations["add_spectrum_api_v1_spectra_post"];
         delete?: never;
         options?: never;
@@ -147,8 +147,43 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** ������� ������������� (UC-08) */
+        /** История идентификаций (UC-08) */
         get: operations["list_history_api_v1_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Получить дефолтные настройки (UC-07) */
+        get: operations["read_settings_api_v1_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Сохранить настройки (echo на phase 1) */
+        patch: operations["update_settings_api_v1_settings_patch"];
+        trace?: never;
+    };
+    "/api/v1/functional-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Полный список функциональных групп (25 строк, §5.4.1) */
+        get: operations["list_functional_groups_api_v1_functional_groups_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -163,7 +198,7 @@ export interface components {
     schemas: {
         /**
          * ApiError
-         * @description ��������������� ������ ������ � `detail`.
+         * @description Унифицированный объект ошибки в `detail`.
          */
         ApiError: {
             /** Code */
@@ -198,12 +233,12 @@ export interface components {
         Body_add_spectrum_api_v1_spectra_post: {
             /**
              * File
-             * @description JCAMP-DX/CSV-������
+             * @description JCAMP-DX/CSV-спектр
              */
             file: string;
             /**
              * Smiles
-             * @description SMILES-������ ����������
+             * @description SMILES-строка соединения
              */
             smiles: string;
             /** Name */
@@ -218,12 +253,12 @@ export interface components {
         Body_identify_api_v1_identify_post: {
             /**
              * File
-             * @description JCAMP-DX ��� CSV
+             * @description JCAMP-DX или CSV
              */
             file: string;
             /**
              * Include Gradcam
-             * @description �������� Grad-CAM ��� top-1 ������
+             * @description Включить Grad-CAM для top-1 группы
              * @default true
              */
             include_gradcam: boolean;
@@ -237,7 +272,7 @@ export interface components {
         Body_identify_batch_api_v1_identify_batch_post: {
             /**
              * Files
-             * @description �� 20 ������ JCAMP-DX/CSV
+             * @description До 20 файлов JCAMP-DX/CSV
              */
             files: string[];
             /**
@@ -253,12 +288,12 @@ export interface components {
         };
         /**
          * CompoundCandidate
-         * @description ��������-���������� �� FAISS-��������� � ����������� cross-validation.
+         * @description Кандидат-соединение из FAISS-ретривала с результатом cross-validation.
          */
         CompoundCandidate: {
             /**
              * Rank
-             * @description ���� � ������, 1 � ����� �������
+             * @description ранг в выдаче, 1 — самый похожий
              */
             rank: number;
             /** Compound Id */
@@ -273,12 +308,12 @@ export interface components {
             cas_number?: string | null;
             /**
              * Score
-             * @description cosine similarity (inner product �� L2-������������� �����������)
+             * @description cosine similarity (inner product на L2-нормированных эмбеддингах)
              */
             score: number;
             /**
              * Consistent
-             * @description True ���� cross-validation �������� ��������� ��� ��������������
+             * @description True если cross-validation помечает кандидата как согласованного
              */
             consistent: boolean;
             /** Jaccard */
@@ -339,17 +374,17 @@ export interface components {
         };
         /**
          * FunctionalGroupPrediction
-         * @description ������������ ����� �������������� ������ (�4.4.3, �4.4.5).
+         * @description Предсказание одной функциональной группы (§4.4.3, §4.4.5).
          */
         FunctionalGroupPrediction: {
             /**
              * Code
-             * @description ��� ������ � ����� FG01..FG25
+             * @description код группы в стиле FG01..FG25
              */
             code: string;
             /**
              * Name
-             * @description ��� ������ (alcohol_OH, ...)
+             * @description имя группы (alcohol_OH, ...)
              */
             name: string;
             /** Probability */
@@ -360,8 +395,22 @@ export interface components {
             predicted: boolean;
         };
         /**
+         * FunctionalGroupResponse
+         * @description Справочная запись функциональной группы (Этап 13).
+         */
+        FunctionalGroupResponse: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Characteristic Bands */
+            characteristic_bands?: string | null;
+        };
+        /**
          * GradCamPayload
-         * @description ������������� ����� Grad-CAM ��� ����� �������������� ������ (�6.10).
+         * @description Активационная карта Grad-CAM для одной функциональной группы (§6.10).
          */
         GradCamPayload: {
             /** Group Code */
@@ -406,7 +455,7 @@ export interface components {
         };
         /**
          * IdentificationResponse
-         * @description ����� POST /api/v1/identify.
+         * @description Ответ POST /api/v1/identify.
          */
         IdentificationResponse: {
             /** Request Id */
@@ -455,6 +504,58 @@ export interface components {
             size: number;
             /** Total */
             total: number;
+        };
+        /**
+         * SettingsResponse
+         * @description Параметры идентификации и предобработки (Этап 13, UC-07).
+         *
+         *     Phase 1: persistence — только localStorage клиента. PATCH-эндпоинт делает
+         *     echo (валидация + 200 с тем же payload), реальная запись в БД — phase 2.
+         */
+        SettingsResponse: {
+            /**
+             * Language
+             * @default ru
+             * @enum {string}
+             */
+            language: "ru" | "en";
+            /**
+             * Include Gradcam
+             * @default true
+             */
+            include_gradcam: boolean;
+            /**
+             * Top K
+             * @default 10
+             */
+            top_k: number;
+            /**
+             * Threshold
+             * @default 0.5
+             */
+            threshold: number;
+            /**
+             * Baseline Method
+             * @default asls
+             * @enum {string}
+             */
+            baseline_method: "asls" | "none";
+            /**
+             * Normalize Method
+             * @default snv
+             * @enum {string}
+             */
+            normalize_method: "snv" | "minmax";
+            /**
+             * Savgol Window
+             * @default 11
+             */
+            savgol_window: number;
+            /**
+             * Savgol Polyorder
+             * @default 2
+             */
+            savgol_polyorder: number;
         };
         /** SpectrumCreatedResponse */
         SpectrumCreatedResponse: {
@@ -579,9 +680,9 @@ export interface operations {
     list_compounds_api_v1_compounds_get: {
         parameters: {
             query?: {
-                /** @description ��������� ������ */
+                /** @description Поисковая строка */
                 q?: string | null;
-                /** @description ������ ����� �������������� ����� (FG01..FG25) */
+                /** @description Список кодов функциональных групп (FG01..FG25) */
                 functional_groups?: string[] | null;
                 page?: number;
                 size?: number;
@@ -615,7 +716,7 @@ export interface operations {
     render_structure_by_smiles_api_v1_compounds_structure_svg_get: {
         parameters: {
             query: {
-                /** @description SMILES ���������� */
+                /** @description SMILES соединения */
                 smiles: string;
                 width?: number;
                 height?: number;
@@ -775,6 +876,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_settings_api_v1_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+        };
+    };
+    update_settings_api_v1_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsResponse"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_functional_groups_api_v1_functional_groups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FunctionalGroupResponse"][];
                 };
             };
         };

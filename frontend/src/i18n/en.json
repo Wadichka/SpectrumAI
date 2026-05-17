@@ -137,16 +137,13 @@
       "stub": "Placeholder for Stage 12: structural formula, metadata, spectra comparison."
     },
     "history": {
-      "title": "Request history",
-      "stub": "Placeholder for Stage 13: history table, filters, pagination."
+      "title": "Request history"
     },
     "database": {
-      "title": "Compound database",
-      "stub": "Placeholder for Stage 13: search, functional group filter."
+      "title": "Compound database"
     },
     "settings": {
-      "title": "Settings",
-      "stub": "Placeholder for Stage 13: preprocessing and identification parameters."
+      "title": "Settings"
     },
     "batch": {
       "title": "Batch processing",
@@ -156,5 +153,109 @@
       "title": "Page not found",
       "description": "The requested route does not exist."
     }
+  },
+  "history": {
+    "title": "Request history",
+    "filters": {
+      "date_from": "From date",
+      "date_to": "To date",
+      "status": "Status",
+      "status_all": "All",
+      "status_success": "Success",
+      "status_error": "Error",
+      "status_pending": "Pending",
+      "reset": "Reset filters"
+    },
+    "columns": {
+      "timestamp": "Date",
+      "filename": "File",
+      "top_group": "Top-1",
+      "status": "Status",
+      "processing_time": "Time",
+      "actions": "Actions"
+    },
+    "pagination": {
+      "page_size": "Page size",
+      "prev": "Previous",
+      "next": "Next",
+      "summary": "Page {{page}} of {{pages}} · total {{total}}"
+    },
+    "empty": {
+      "title": "History is empty",
+      "description": "Run identification to add a record.",
+      "cta": "Go to identify"
+    },
+    "open": "Open",
+    "load_error": "Failed to load history.",
+    "no_top_group": "—"
+  },
+  "database": {
+    "title": "Compound database",
+    "stats": {
+      "total": "Total compounds: {{count}}",
+      "filtered": "Found: {{count}}"
+    },
+    "filters": {
+      "search": "Search (name, SMILES, CAS)",
+      "groups": "Filter by functional groups",
+      "groups_placeholder": "Select functional groups",
+      "reset": "Reset",
+      "selected": "Selected: {{count}}"
+    },
+    "columns": {
+      "structure": "Structure",
+      "name": "Name",
+      "formula": "Formula",
+      "smiles": "SMILES",
+      "cas": "CAS",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No matches found",
+      "description": "Change the query or reset filters."
+    },
+    "open": "Open",
+    "add": "Add compound",
+    "add_stub": "Manual addition will be available in Stage 14.",
+    "load_error": "Failed to load the compound database.",
+    "no_name": "—"
+  },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "identification": "Identification",
+      "interface": "Interface",
+      "preprocessing": "Preprocessing"
+    },
+    "identification": {
+      "title": "Identification parameters",
+      "top_k": "Number of candidates (top-K)",
+      "threshold": "Classification threshold",
+      "include_gradcam": "Include Grad-CAM in response"
+    },
+    "interface": {
+      "title": "Interface",
+      "language": "Interface language",
+      "language_ru": "Russian",
+      "language_en": "English",
+      "theme": "Theme",
+      "theme_stub": "Light (dark mode coming later)"
+    },
+    "preprocessing": {
+      "title": "Preprocessing parameters",
+      "baseline": "Baseline correction",
+      "baseline_asls": "Asymmetric Least Squares",
+      "baseline_none": "Disabled",
+      "normalize": "Normalization",
+      "normalize_snv": "SNV",
+      "normalize_minmax": "Min-max",
+      "savgol_window": "Savitzky-Golay window",
+      "savgol_polyorder": "Polynomial order"
+    },
+    "save": "Save",
+    "reset": "Reset to defaults",
+    "saved": "Settings saved",
+    "save_error": "Failed to save settings",
+    "load_error": "Failed to load settings from the server; using defaults."
   }
 }
