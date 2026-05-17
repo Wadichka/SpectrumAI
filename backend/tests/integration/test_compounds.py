@@ -68,3 +68,17 @@ async def test_structure_svg_returns_svg(
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("image/svg+xml")
     assert "<svg" in response.text
+
+
+@pytest.mark.asyncio
+async def test_structure_svg_by_smiles_works_without_db(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/compounds/structure.svg?smiles=CCO")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in response.text
+
+
+@pytest.mark.asyncio
+async def test_structure_svg_by_smiles_invalid_returns_400(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/compounds/structure.svg?smiles=not_a_valid_smiles")
+    assert response.status_code == 400

@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/compounds/structure.svg": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** SVG ����������� ������� �� SMILES (��� ��, phase 1) */
+        get: operations["render_structure_by_smiles_api_v1_compounds_structure_svg_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/compounds/{compound_id}": {
         parameters: {
             query?: never;
@@ -399,6 +416,8 @@ export interface components {
             /** Candidates */
             candidates: components["schemas"]["CompoundCandidate"][];
             gradcam?: components["schemas"]["GradCamPayload"] | null;
+            /** Spectrum */
+            spectrum?: number[] | null;
             /** Spectrum Length */
             spectrum_length: number;
             /** Model Versions */
@@ -580,6 +599,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedCompoundsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    render_structure_by_smiles_api_v1_compounds_structure_svg_get: {
+        parameters: {
+            query: {
+                /** @description SMILES ���������� */
+                smiles: string;
+                width?: number;
+                height?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/svg+xml": unknown;
                 };
             };
             /** @description Validation Error */

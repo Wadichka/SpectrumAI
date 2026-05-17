@@ -39,6 +39,7 @@ export default function IdentificationPage() {
   const errorMessage = useIdentificationStore((s) => s.errorMessage);
   const setError = useIdentificationStore((s) => s.setError);
   const setLastRequestId = useIdentificationStore((s) => s.setLastRequestId);
+  const setLastResponse = useIdentificationStore((s) => s.setLastResponse);
   const resetIdentification = useIdentificationStore((s) => s.reset);
 
   const [topK, setTopK] = useState(10);
@@ -126,6 +127,7 @@ export default function IdentificationPage() {
       setCurrentStep(4);
       const requestId = response.request_id;
       setLastRequestId(requestId ?? null);
+      setLastResponse(response);
       setState("results");
       window.setTimeout(() => {
         if (requestId != null) {

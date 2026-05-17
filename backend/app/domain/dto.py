@@ -71,6 +71,10 @@ class IdentificationResult(BaseModel):
     processing_time_ms: int = Field(ge=0)
     timestamp: datetime
     gradcam: GradCamPayload | None = None
+    # Обработанные интенсивности (длина = spectrum_length). На phase 1 backend
+    # отдаёт её, чтобы ResultsPage мог нарисовать спектр без дополнительного
+    # запроса; raw-данные не хранятся.
+    spectrum: list[float] | None = None
 
 
 __all__ = [

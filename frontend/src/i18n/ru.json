@@ -67,6 +67,62 @@
       "ready": "Готово"
     }
   },
+  "results": {
+    "title": "Результаты идентификации",
+    "subtitle": "Обработано за {{ms}} мс · режим: {{mode}}",
+    "lost_session": "Результаты идентификации потеряны (страница перезагружена). Выполните анализ заново.",
+    "lost_session.cta": "К идентификации",
+    "spectrum": {
+      "title": "ИК-спектр",
+      "absorbance": "Поглощение",
+      "transmittance": "Пропускание",
+      "unavailable": "Спектр недоступен в текущем ответе сервера."
+    },
+    "predictions": {
+      "title": "Функциональные группы",
+      "show_all": "Показать все",
+      "show_predicted": "Только предсказанные"
+    },
+    "candidates": {
+      "title": "Кандидаты-соединения",
+      "empty": "FAISS не вернул кандидатов (индекс не загружен)."
+    },
+    "candidate": {
+      "score": "score {{value}}",
+      "consistent": "Согласован с предсказанием (Jaccard {{jaccard}})",
+      "more": "Подробнее"
+    },
+    "explanation": {
+      "title": "Объяснение",
+      "placeholder": "Текстовое объяснение будет добавлено в следующих этапах."
+    },
+    "gradcam": {
+      "legend": "Наложение Grad-CAM для группы {{group}}",
+      "unavailable": "Grad-CAM доступен только для top-1 предсказанной группы."
+    },
+    "actions": {
+      "export": "Сохранить отчёт",
+      "share": "Поделиться",
+      "save_to_db": "Добавить в базу",
+      "new_search": "Новый поиск",
+      "stub": "Доступно после реализации экспорта."
+    }
+  },
+  "compound": {
+    "title": "Карточка соединения",
+    "back": "Назад к результатам",
+    "not_found": "Соединение не найдено в базе.",
+    "field": {
+      "name": "Название",
+      "formula": "Формула",
+      "cas": "CAS",
+      "smiles": "SMILES",
+      "inchi": "InChI",
+      "inchi_key": "InChI Key",
+      "molecular_weight": "Молекулярная масса",
+      "functional_groups": "Функциональные группы"
+    }
+  },
   "page": {
     "identify": {
       "title": "Идентификация",

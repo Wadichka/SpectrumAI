@@ -123,6 +123,7 @@ class InferenceService:
             threshold_mode=threshold_mode,
             processing_time_ms=elapsed_ms,
             timestamp=datetime.now(UTC),
+            spectrum=intensities.astype(float).tolist(),
         )
 
     def _build_predictions(self, probabilities: np.ndarray) -> list[FunctionalGroupPrediction]:

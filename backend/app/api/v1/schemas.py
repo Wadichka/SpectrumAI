@@ -59,6 +59,7 @@ class IdentificationResponse(BaseModel):
     predictions: list[FunctionalGroupPrediction]
     candidates: list[CompoundCandidate]
     gradcam: GradCamPayload | None = None
+    spectrum: list[float] | None = None
     spectrum_length: int = Field(ge=1)
     model_versions: dict[str, str]
     threshold_mode: str

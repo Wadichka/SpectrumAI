@@ -49,6 +49,22 @@ def list_compounds(
 
 
 @router.get(
+    "/structure.svg",
+    summary="SVG структурной формулы по SMILES (без БД, phase 1)",
+    response_class=Response,
+    responses={200: {"content": {"image/svg+xml": {}}}},
+)
+def render_structure_by_smiles(
+    smiles: str = Query(..., description="SMILES соединения"),
+    width: int = Query(default=320, ge=50, le=2000),
+    height: int = Query(default=240, ge=50, le=2000),
+    service: CompoundService = Depends(get_compound_service),
+) -> Response:
+    svg = service.render_svg_from_smiles(smiles, width=width, height=height)
+    return Response(content=svg, media_type="image/svg+xml")
+
+
+@router.get(
     "/{compound_id}",
     response_model=CompoundDetailResponse,
     summary="Карточка соединения (UC-02)",

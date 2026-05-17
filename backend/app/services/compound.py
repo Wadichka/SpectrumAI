@@ -132,15 +132,34 @@ class CompoundService:
         mol = Chem.MolFromSmiles(compound.smiles_canonical)
         if mol is None:
             raise EntityNotFoundError("Compound.structure", compound_id)
-        drawer = rdMolDraw2D.MolDraw2DSVG(int(width), int(height))
-        drawer.DrawMolecule(mol)
-        drawer.FinishDrawing()
-        svg = drawer.GetDrawingText()
-        # MolDraw2DSVG возвращает SVG с XML-декларацией <?xml ...?>; для inline
-        # вставки во фронте удобнее обрезать её.
-        if svg.startswith("<?xml"):
-            svg = svg.split("?>", 1)[1].lstrip()
-        return str(svg)
+        return _mol_to_svg(mol, width=width, height=height)
+
+    def render_svg_from_smiles(
+        self,
+        smiles: str,
+        *,
+        width: int = 320,
+        height: int = 240,
+    ) -> str:
+        """Рендер SVG напрямую из SMILES (phase 1: БД пустая, нет compound_id)."""
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is None:
+            from app.domain.errors import SpectrumValidationError
+
+            raise SpectrumValidationError(f"invalid SMILES: {smiles!r}", field="smiles")
+        return _mol_to_svg(mol, width=width, height=height)
+
+
+def _mol_to_svg(mol: object, *, width: int, height: int) -> str:
+    drawer = rdMolDraw2D.MolDraw2DSVG(int(width), int(height))
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    svg = drawer.GetDrawingText()
+    # MolDraw2DSVG возвращает SVG с XML-декларацией <?xml ...?>; для inline
+    # вставки во фронте удобнее обрезать её.
+    if svg.startswith("<?xml"):
+        svg = svg.split("?>", 1)[1].lstrip()
+    return str(svg)
 
 
 __all__ = ["CompoundDetail", "CompoundService", "PaginatedCompounds"]

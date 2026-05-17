@@ -67,6 +67,62 @@
       "ready": "Done"
     }
   },
+  "results": {
+    "title": "Identification results",
+    "subtitle": "Processed in {{ms}} ms · mode: {{mode}}",
+    "lost_session": "Identification results were lost (page reloaded). Please run the analysis again.",
+    "lost_session.cta": "Back to identify",
+    "spectrum": {
+      "title": "IR spectrum",
+      "absorbance": "Absorbance",
+      "transmittance": "Transmittance",
+      "unavailable": "Spectrum data is not available in the current response."
+    },
+    "predictions": {
+      "title": "Functional groups",
+      "show_all": "Show all",
+      "show_predicted": "Predicted only"
+    },
+    "candidates": {
+      "title": "Candidate compounds",
+      "empty": "FAISS returned no candidates (index not loaded)."
+    },
+    "candidate": {
+      "score": "score {{value}}",
+      "consistent": "Consistent with prediction (Jaccard {{jaccard}})",
+      "more": "Details"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "placeholder": "Text explanation will be added in upcoming stages."
+    },
+    "gradcam": {
+      "legend": "Grad-CAM overlay for {{group}}",
+      "unavailable": "Grad-CAM is available only for the top-1 predicted group."
+    },
+    "actions": {
+      "export": "Save report",
+      "share": "Share",
+      "save_to_db": "Add to database",
+      "new_search": "New search",
+      "stub": "Available after export is implemented."
+    }
+  },
+  "compound": {
+    "title": "Compound card",
+    "back": "Back to results",
+    "not_found": "Compound is not found in the database.",
+    "field": {
+      "name": "Name",
+      "formula": "Formula",
+      "cas": "CAS",
+      "smiles": "SMILES",
+      "inchi": "InChI",
+      "inchi_key": "InChI Key",
+      "molecular_weight": "Molecular weight",
+      "functional_groups": "Functional groups"
+    }
+  },
   "page": {
     "identify": {
       "title": "Identify",
