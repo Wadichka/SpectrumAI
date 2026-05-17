@@ -27,6 +27,46 @@
     "primary": "Action",
     "submit": "Submit"
   },
+  "identify": {
+    "title": "Identify compound by IR spectrum",
+    "dropzone": {
+      "idle": "Drop the file here or click to select",
+      "dragging": "Release to upload",
+      "formats": "Supported formats: JCAMP-DX (.jdx, .dx), CSV, TXT (≤ 10 MB)"
+    },
+    "button": {
+      "select_file": "Select file",
+      "use_example": "Use example",
+      "identify": "Identify",
+      "cancel": "Cancel"
+    },
+    "preview": {
+      "size": "Size: {{size}}",
+      "remove": "Remove file"
+    },
+    "options": {
+      "title": "Processing parameters",
+      "top_k": "Number of candidates (top-K)",
+      "include_gradcam": "Include Grad-CAM"
+    },
+    "error": {
+      "invalid_extension": "Unsupported file format. Allowed: JCAMP-DX, CSV, TXT.",
+      "too_large": "File is too large. Maximum is 10 MB.",
+      "network": "Could not reach the server. Check your connection.",
+      "server": "Server returned an error. Please try again later."
+    },
+    "processing": {
+      "title": "Identification in progress…",
+      "subtitle": "File: {{name}}"
+    },
+    "steps": {
+      "parsing": "Parsing",
+      "preprocessing": "Preprocessing",
+      "analyzing": "Analyzing",
+      "searching": "Searching in database",
+      "ready": "Done"
+    }
+  },
   "page": {
     "identify": {
       "title": "Identify",
