@@ -38,7 +38,13 @@ def load_contrastive_into_towers(
     """
     if not checkpoint_path.exists():
         raise FileNotFoundError(f"contrastive-чекпойнт не найден: {checkpoint_path}")
-    payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    # `weights_only=False` нужен, чтобы прочитать сопутствующие поля payload
+    # (thresholds, class_names, model_versions); state_dict — основа.
+    # Риск pickle-десериализации сведён к нулю ADR-7: чекпойнты поставляются
+    # вместе с дистрибутивом, не принимаются от пользователя по сети.
+    payload = torch.load(  # nosec B614
+        checkpoint_path, map_location=device, weights_only=False
+    )
     state_dict = payload.get("spectrum_tower_state_dict")
     if state_dict is None:
         raise RuntimeError(f"в чекпойнте {checkpoint_path} нет ключа 'spectrum_tower_state_dict'")
@@ -55,7 +61,10 @@ def load_cnn_into_model(
     """Загружает чекпойнт обычного multi-label CNN (Этап 5)."""
     if not checkpoint_path.exists():
         raise FileNotFoundError(f"CNN-чекпойнт не найден: {checkpoint_path}")
-    payload = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    # См. комментарий выше про weights_only / ADR-7 и nosec B614.
+    payload = torch.load(  # nosec B614
+        checkpoint_path, map_location=device, weights_only=False
+    )
     state_dict = payload.get("state_dict")
     if state_dict is None:
         raise RuntimeError(f"в чекпойнте {checkpoint_path} нет ключа 'state_dict'")

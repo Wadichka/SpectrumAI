@@ -143,3 +143,13 @@ asyncio_mode = "auto"
 # `--benchmark-skip` отключает реальный замер времени в обычных прогонах;
 # для измерений NFR-01 — `pytest tests/perf/ --benchmark-only` (см. §11.6.5).
 addopts = "-ra --strict-markers --benchmark-skip"
+
+# -----------------------------------------------------------------------------
+# Bandit — статический анализ безопасности (§11.6.7). Skip-ы:
+#   - tests/ — assertions и mock-данные шумят на B101/B106;
+#   - alembic/versions — авто-сгенерированные миграции.
+# Запуск: `bandit -r app -c pyproject.toml -f txt -o ../docs/test-report/security/bandit.txt`.
+# -----------------------------------------------------------------------------
+[tool.bandit]
+exclude_dirs = ["tests", "alembic/versions"]
+skips = []

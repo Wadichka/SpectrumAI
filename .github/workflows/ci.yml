@@ -40,6 +40,9 @@ jobs:
       - name: Pytest
         run: pytest -v --cov=app --cov-report=term-missing
 
+      - name: Bandit (security, fail on HIGH)
+        run: bandit -r app -c pyproject.toml --severity-level high
+
   ml:
     name: ML pipelines (Python 3.11)
     runs-on: ubuntu-latest
