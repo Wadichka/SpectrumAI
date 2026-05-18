@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
+
 from pipelines.retrieval import (
     CompoundCandidate,
     FaissRetriever,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import torch
+
 from pipelines.models.cnn1d import CNNBlockConfig, FunctionalGroupsCNN, count_parameters
 
 

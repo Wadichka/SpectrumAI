@@ -9,11 +9,12 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
+from torch.utils.data import DataLoader
+
 from pipelines.dataset import SpectraDataset
 from pipelines.losses import make_loss
 from pipelines.models.cnn1d import FunctionalGroupsCNN
 from pipelines.training import Trainer, set_global_seed
-from torch.utils.data import DataLoader
 
 
 def _make_mini_parquet(path: Path, *, n: int = 12, length: int = 256, n_labels: int = 5) -> None:

@@ -7,6 +7,7 @@ import os
 
 import pytest
 import torch
+
 from pipelines.models.molecule_tower import (
     DEFAULT_MODEL_NAME,
     TINY_MODEL_NAME,

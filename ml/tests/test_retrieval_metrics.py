@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
+
 from pipelines.retrieval_metrics import (
     mean_reciprocal_rank,
     spearman_embedding_tanimoto,

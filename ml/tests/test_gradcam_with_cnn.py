@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
+
 from pipelines.labeling import GROUP_NAMES, N_GROUPS
 from pipelines.models.cnn1d import FunctionalGroupsCNN
 

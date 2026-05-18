@@ -16,7 +16,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-import torch
 from torch import Tensor, nn
 
 
@@ -178,24 +177,3 @@ __all__ = [
     "build_model",
     "count_parameters",
 ]
-
-
-if __name__ == "__main__":  # pragma: no cover
-    import json
-    from pathlib import Path
-
-    import yaml  # type: ignore[import-untyped]
-
-    cfg_path = Path(__file__).resolve().parents[3] / "configs" / "cnn1d.yaml"
-    cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
-    net = build_model(cfg["model"])
-    sample = torch.zeros(2, int(cfg["data"]["spectrum_length"]))
-    logits = net(sample)
-    print(
-        json.dumps(
-            {
-                "params": count_parameters(net),
-                "logits_shape": list(logits.shape),
-            }
-        )
-    )

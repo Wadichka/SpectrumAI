@@ -9,13 +9,14 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
+from torch.utils.data import DataLoader
+
 from pipelines.dataset import SpectraDataset
 from pipelines.losses import make_loss
 from pipelines.models.cnn1d import FunctionalGroupsCNN
 from pipelines.models.molecule_tower import TINY_MODEL_NAME, MoleculeTower
 from pipelines.models.spectrum_tower import SpectrumTower
 from pipelines.training import ContrastiveTrainer, set_global_seed
-from torch.utils.data import DataLoader
 
 
 def _make_mini_parquet(path: Path, *, n: int = 8, length: int = 128, n_labels: int = 4) -> None:

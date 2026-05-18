@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+
 from pipelines.labeling import GROUP_NAMES
 from scripts.build_synthetic_dataset import SMILES_LIST, TARGET_LENGTH, build
 

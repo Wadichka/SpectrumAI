@@ -7,6 +7,7 @@ import math
 import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
+
 from pipelines.losses import SymmetricInfoNCE, make_loss
 
 

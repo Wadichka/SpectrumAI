@@ -8,8 +8,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import torch
-from pipelines.dataset import SpectraDataset
 from torch.utils.data import DataLoader
+
+from pipelines.dataset import SpectraDataset
 
 _SPECTRUM_LENGTH = 3601
 _N_LABELS = 25

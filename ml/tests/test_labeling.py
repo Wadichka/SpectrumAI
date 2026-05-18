@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
 from pipelines.labeling import (
     FUNCTIONAL_GROUPS,
     GROUP_NAMES,
