@@ -12,6 +12,10 @@ vi.mock("react-plotly.js", () => ({
   default: () => <div data-testid="plotly-chart" />,
 }));
 
+vi.mock("@/api/reports", () => ({
+  postIdentificationReport: vi.fn(async () => new Blob(["%PDF-fake"], { type: "application/pdf" })),
+}));
+
 function renderPage() {
   return render(
     <I18nextProvider i18n={i18n}>
@@ -103,13 +107,23 @@ describe("ResultsPage", () => {
     expect(screen.getByTestId("identify-page")).toBeInTheDocument();
   });
 
-  it("кнопка Сохранить отчёт вызывает window.alert", async () => {
+  it("кнопка Сохранить отчёт вызывает API и инициирует загрузку blob", async () => {
     const user = userEvent.setup();
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    const { postIdentificationReport } = await import("@/api/reports");
+    const reportSpy = vi.mocked(postIdentificationReport);
+    reportSpy.mockClear();
+    const createObjectURL = vi.fn(() => "blob:fake-url");
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
+
     useIdentificationStore.getState().setLastResponse(sampleResponse);
     renderPage();
     await user.click(screen.getByRole("button", { name: /Сохранить отчёт/i }));
-    expect(alertSpy).toHaveBeenCalledOnce();
-    alertSpy.mockRestore();
+
+    expect(reportSpy).toHaveBeenCalledWith(sampleResponse);
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 });

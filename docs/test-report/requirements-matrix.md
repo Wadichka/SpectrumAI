@@ -16,7 +16,7 @@
 | FR-06 | Grad-CAM-объяснения | integration + ml-unit | `tests/integration/test_identify.py::test_identify_with_gradcam`, `ml/tests/test_gradcam_with_cnn.py` | `gradcam` поле в response при `include_gradcam=true` | PASS |
 | FR-07 | Добавление спектра в базу | integration | `tests/integration/test_spectra.py::*` | API POST /api/v1/spectra работает | PASS (API), SKIP (UI) |
 | FR-08 | Пакетная обработка | integration + e2e | `tests/integration/test_identify_batch.py`, `tests/e2e/06-batch.spec.ts` | 20 файлов / 50 МБ — лимиты соблюдены | PASS |
-| FR-09 | Экспорт в PDF | — | — | Не реализовано (заглушка во фронте) | **SKIP** |
+| FR-09 | Экспорт в PDF | unit + integration + e2e | `tests/unit/reports/test_pdf_generator.py`, `tests/integration/test_reports.py`, `tests/e2e/01-identify.spec.ts::UC-05` | Сервер генерирует PDF (reportlab + matplotlib) по `POST /api/v1/reports/identification`; фронт скачивает blob | PASS |
 | FR-10 | История идентификаций | integration + e2e | `tests/integration/test_history.py`, `tests/e2e/08-history.spec.ts` | API возвращает страницу истории; фронт открывается | PASS |
 
 ## Нефункциональные требования
@@ -43,6 +43,6 @@
 
 ## Итог
 
-- **16 из 19** требований ТЗ покрыты автоматизированными тестами и приняты.
-- **3 SKIP** — FR-09 (PDF), NFR-07 (SUS), NFR-09 (документация) — оцениваются вне кода.
+- **17 из 19** требований ТЗ покрыты автоматизированными тестами и приняты.
+- **2 SKIP** — NFR-07 (SUS, ручное тестирование) и NFR-09 (документация — закрывается комплектом markdown-руководств в Этапе 17, формальная приёмка комиссией перед защитой).
 - Целевые ML-метрики таблицы 11.2 (Macro-F1, Top-1 и т. п.) — **фаза 2**, Этап 20.

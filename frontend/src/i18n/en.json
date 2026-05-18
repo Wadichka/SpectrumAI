@@ -102,6 +102,9 @@
     },
     "actions": {
       "export": "Save report",
+      "export_progress": "Generating PDF…",
+      "export_missing_data": "No data to export. Run identification first.",
+      "export_failed": "Failed to generate PDF. See console for details.",
       "share": "Share",
       "save_to_db": "Add to database",
       "new_search": "New search",

@@ -19,5 +19,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: true,
+    // Playwright e2e-спеки исключаем — у них свой раннер (npx playwright test).
+    exclude: ["node_modules", "tests/e2e/**", "playwright-report/**"],
   },
 });

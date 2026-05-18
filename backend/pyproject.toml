@@ -33,6 +33,8 @@ dependencies = [
     "structlog>=24.4",
     "tensorboard>=2.16",
     "pyyaml>=6.0",
+    "reportlab>=4.0",
+    "matplotlib>=3.8",
 ]
 
 [project.optional-dependencies]
@@ -125,6 +127,8 @@ module = [
     "transformers.*",
     "pandas.*",
     "pipelines.*",
+    "reportlab.*",
+    "matplotlib.*",
 ]
 ignore_missing_imports = true
 
