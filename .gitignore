@@ -317,6 +317,8 @@ coverage.json
 coverage-final.json
 junit.xml
 report.html
+# docs/test-report/** — финальные артефакты Этапа 16, коммитим:
+!docs/test-report/**
 
 # --- ОС-мусор ---
 .DS_Store
