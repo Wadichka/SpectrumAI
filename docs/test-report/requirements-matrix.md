@@ -29,7 +29,7 @@
 | NFR-04 | Локализация (русский) | manual | `frontend/src/i18n/ru.json` | Все ключевые экраны переведены, переключение работает | PASS |
 | NFR-05 | Покрытие unit-тестами ≥70% | pytest-cov | `docs/test-report/coverage/` | **94%** (целевой 80%, приёмочный 70%) | PASS |
 | NFR-06 | Docker-контейнер | manual | `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile` | `docker compose up` поднимает рабочую систему | PASS |
-| NFR-07 | Юзабилити (SUS ≥70) | manual SUS | `manual/sus-questionnaire.md` | Запланировано перед защитой | **SKIP** (вне кода) |
+| NFR-07 | Юзабилити (SUS ≥70) | manual SUS | `manual/sus-questionnaire.md`, `manual/usability-protocol.md`, `manual/sus-results.md` | Инструментарий и шаблон сводки готовы; ручное тестирование с 3–5 пользователями — перед защитой | **READY** (manual execution) |
 | NFR-08 | Логирование | manual | `structlog` в `app/main.py` и сервисах | JSON-логи всех операций с timestamps | PASS |
 | NFR-09 | Документация на русском | manual | `docs/INSTALL.md`, `README.md`, `CLAUDE.md` | Комплект на русском; финальная редакция перед защитой | **SKIP** (вне кода) |
 
