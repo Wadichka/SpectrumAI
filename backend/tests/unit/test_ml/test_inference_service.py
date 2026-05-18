@@ -11,15 +11,15 @@ import numpy as np
 import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
-from pipelines.labeling import FUNCTIONAL_GROUPS, GROUP_NAMES, N_GROUPS
-from pipelines.models.cnn1d import FunctionalGroupsCNN
-from pipelines.models.spectrum_tower import SpectrumTower
-from pipelines.retrieval import FaissRetriever
 
 from app.domain.dto import IdentificationResult
 from app.ml.components import MLComponents
 from app.ml.inference_service import InferenceService
 from app.preprocessing.config import ProcessedSpectrum
+from pipelines.labeling import FUNCTIONAL_GROUPS, GROUP_NAMES, N_GROUPS
+from pipelines.models.cnn1d import FunctionalGroupsCNN
+from pipelines.models.spectrum_tower import SpectrumTower
+from pipelines.retrieval import FaissRetriever
 
 _TINY_BLOCKS: list[dict[str, int | float]] = [
     {"in_channels": 1, "out_channels": 8, "kernel_size": 5, "padding": 2, "dropout": 0.0},

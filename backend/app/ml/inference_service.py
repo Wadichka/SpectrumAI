@@ -28,7 +28,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import structlog
 import torch
-from pipelines.retrieval import CompoundCandidate as RetrievalCandidate
 
 from app.core.config import get_settings
 from app.domain.dto import (
@@ -43,6 +42,7 @@ from app.ml.cross_validation import (
     compute_consistency,
 )
 from app.preprocessing.config import ProcessedSpectrum
+from pipelines.retrieval import CompoundCandidate as RetrievalCandidate
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session

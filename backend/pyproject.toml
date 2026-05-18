@@ -86,6 +86,11 @@ ignore = ["RUF001", "RUF002", "RUF003", "B008"]
 "tests/**" = ["B", "SIM"]
 "alembic/versions/**" = ["E501"]  # длинные seed-строки в миграции
 
+[tool.ruff.lint.isort]
+# ``pipelines`` живёт в ml/ и добавляется в sys.path через app.ml._ml_path —
+# относим его к first-party, чтобы изорт не размещал его до side-effect-импорта.
+known-first-party = ["app", "pipelines"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -135,4 +140,6 @@ warn_required_dynamic_aliases = true
 minversion = "8.0"
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-ra --strict-markers"
+# `--benchmark-skip` отключает реальный замер времени в обычных прогонах;
+# для измерений NFR-01 — `pytest tests/perf/ --benchmark-only` (см. §11.6.5).
+addopts = "-ra --strict-markers --benchmark-skip"

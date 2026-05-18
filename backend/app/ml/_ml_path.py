@@ -21,10 +21,9 @@ from pathlib import Path
 # репозитория) переменная не задана — используется fallback на относительный
 # путь backend/app/ml → repo_root/ml.
 _env_root = os.environ.get("SPECTRUMAI_ML_ROOT")
-if _env_root:
-    _ML_ROOT = Path(_env_root).resolve()
-else:
-    _ML_ROOT = Path(__file__).resolve().parents[3] / "ml"
+_ML_ROOT = (
+    Path(_env_root).resolve() if _env_root else Path(__file__).resolve().parents[3] / "ml"
+)
 
 if _ML_ROOT.exists() and str(_ML_ROOT) not in sys.path:
     sys.path.insert(0, str(_ML_ROOT))

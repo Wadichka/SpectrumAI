@@ -15,9 +15,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from pipelines.labeling import label_functional_groups
-
 from app.ml import _ml_path  # noqa: F401 — sys.path
+from pipelines.labeling import label_functional_groups
 
 
 @dataclass(frozen=True, slots=True)

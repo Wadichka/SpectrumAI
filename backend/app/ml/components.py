@@ -22,10 +22,6 @@ from typing import Any
 import numpy as np
 import structlog
 import torch
-from pipelines.labeling import FUNCTIONAL_GROUPS, GROUP_NAMES
-from pipelines.models.cnn1d import FunctionalGroupsCNN
-from pipelines.models.spectrum_tower import SpectrumTower
-from pipelines.retrieval import FaissRetriever
 
 from app.core.config import Settings, get_settings
 from app.ml import _ml_path  # noqa: F401 — side-effect: sys.path += ml/
@@ -33,6 +29,10 @@ from app.ml.checkpoint_loader import (
     load_cnn_into_model,
     load_contrastive_into_towers,
 )
+from pipelines.labeling import FUNCTIONAL_GROUPS, GROUP_NAMES
+from pipelines.models.cnn1d import FunctionalGroupsCNN
+from pipelines.models.spectrum_tower import SpectrumTower
+from pipelines.retrieval import FaissRetriever
 
 log = structlog.get_logger(__name__)
 
