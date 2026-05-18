@@ -1,0 +1,10 @@
+# Frontend build context excludes (Dockerfile and Dockerfile.prod).
+node_modules/
+dist/
+.vite/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store

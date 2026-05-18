@@ -303,10 +303,14 @@ redis-data/
 docker-volumes/
 
 # --- Конфиги локальной разработки (не для git) ---
-.env.local
-.env.*.local
+# Игнорируем любые варианты .env.* (.env.local, .env.prod, .env.staging и т. п.),
+# чтобы не утекли пароли. Базовый .env уже исключён выше через "Environments".
+# Шаблон .env.example, наоборот, коммитится.
+.env.*
+!.env.example
 docker-compose.override.yml
-# Базовый .env уже исключён выше через "Environments"
+# Локальные настройки Claude Code (allow/deny tools, кэш агентов).
+.claude/
 
 # --- Покрытие и отчёты тестов ---
 coverage.json

@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -24,10 +25,26 @@ class Settings(BaseSettings):
         default="redis://localhost:6379/0",
         description="DSN кэша Redis.",
     )
-    cors_origins: list[str] = Field(
+    # NoDecode отключает JSON-парсинг env-значения для списка, чтобы поддерживать
+    # привычный формат "comma-separated" (CORS_ORIGINS=http://a,http://b) — иначе
+    # pydantic-settings ≥ 2.4 требует JSON-литерал.
+    cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:5173"],
         description="Разрешённые origin'ы для CORS (фронтенд Vite).",
     )
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value: object) -> object:
+        """Принимает list[str], JSON-литерал или строку с запятыми."""
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("["):
+                import json
+
+                return json.loads(stripped)
+            return [item.strip() for item in stripped.split(",") if item.strip()]
+        return value
     log_level: str = Field(default="INFO", description="Уровень логирования.")
 
     # Пути к ML-артефактам (Этап 8, §4.4.3). Относительны cwd при старте FastAPI;

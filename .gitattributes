@@ -1,0 +1,7 @@
+# Принудительные line endings: shell-скрипты и Dockerfile должны быть LF,
+# иначе под Windows с core.autocrlf=true checkout конвертирует в CRLF,
+# и shebang ломается внутри Linux-контейнера.
+*.sh text eol=lf
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+*.conf text eol=lf

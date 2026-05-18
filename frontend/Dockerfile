@@ -1,16 +1,28 @@
-FROM node:20-alpine
+# Образ фронтенда SpectrumAI (Этап 15, глава 4.6).
+# Multi-stage: builder собирает SPA через Vite, runtime — nginx alpine
+# раздаёт статику + проксирует /api/* на backend:8000.
+
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# package.json появится после ручного `npm create vite@latest`
-# (см. frontend/SETUP.md). При первой dev-сборке скрипт init в compose
-# выполняет npm install — здесь это закомментировано, потому что на момент
-# build файла может не быть.
-COPY package*.json ./
-RUN if [ -f package.json ]; then npm install; fi
+COPY package.json package-lock.json* ./
+RUN npm ci
 
 COPY . .
 
-EXPOSE 5173
+# VITE_API_URL="" → axios baseURL пустой → все запросы относительные
+# (/api/v1/...), проксируются nginx на backend в той же docker-сети.
+ARG VITE_API_URL=""
+ENV VITE_API_URL=$VITE_API_URL
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+RUN npm run build
+
+
+# -----------------------------------------------------------------------------
+FROM nginx:alpine AS runtime
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80

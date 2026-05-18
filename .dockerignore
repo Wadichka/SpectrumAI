@@ -1,0 +1,64 @@
+# Root-level .dockerignore. Применяется к билду с context=. (prod backend).
+# Цель — не тянуть в build-контекст всё, что не нужно бэкенду: .git, ml/,
+# frontend/, models/, локальные venv'ы и кэши.
+
+# VCS / IDE / редакторы
+.git
+.gitignore
+.idea
+.vscode
+.claude
+
+# Python
+**/.venv
+.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/htmlcov
+**/.coverage
+**/.coverage.*
+**/*.egg-info
+build
+dist
+
+# Node / frontend
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/coverage
+
+# ML-эксперименты — большие, в prod-бэкенде не нужны
+ml/data
+ml/experiments
+ml/notebooks
+
+# Модели монтируются как read-only volume, в образ не копируются
+models
+
+# Локальные env-файлы (могут содержать секреты)
+.env
+.env.local
+.env.prod
+.env.*.local
+backend/.env
+
+# Тесты не нужны в prod-образе
+backend/tests
+frontend/tests
+
+# Документация (кроме README.md / LICENSE, на которые ссылается pyproject.toml)
+docs
+
+# Compose / Dockerfile исходные — не нужны внутри образа
+docker-compose*.yml
+**/Dockerfile
+**/Dockerfile.*
+!backend/Dockerfile
+
+# Прочее
+*.log
+.DS_Store

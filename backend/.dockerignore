@@ -1,0 +1,20 @@
+# Backend build context excludes (Dockerfile and Dockerfile.prod).
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+tests/
+.env
+.env.*
+!.env.example
+*.log
+*.egg-info/
+build/
+dist/
