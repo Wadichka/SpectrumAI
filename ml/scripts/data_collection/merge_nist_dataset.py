@@ -1,35 +1,30 @@
-"""Сборка предзащитного parquet'а из subset-IDs + NistChemData CSV-каталога.
+"""Сборка parquet'а из subset-IDs + каталога NistChemPy.
 
-Используется после ``select_predefense_subset.py`` (фаза 2, этап 18). На
-входе — CSV из ~2000 NIST ID + сами JDX-файлы из распакованного
-``nist_IR.zip`` + CSV-каталоги соединений и метаданных от
-``IvanChernyshov/NistChemData``.
+Используется после ``download_datasets.py --source nist_chemdata`` и
+``select_subset.py``. На входе — CSV из ``select_subset`` (~2500 NIST ID) +
+сами JDX-файлы вида ``{ID}_IR_{idx}.jdx`` в ``--jdx-dir`` +
+``nist_compounds.csv`` (выгрузка ``nistchempy.get_all_data``).
 
 Алгоритм:
 
-1. Загружает ``predefense_subset_ids.csv`` (выход
-   ``select_predefense_subset``).
-2. Подгружает ``nist_compounds.csv`` (name, cas, inchi, inchi_key) и
-   ``nist_ir_info.csv`` (physical state).
-3. Для каждой строки subset:
-   - Парсит JDX через :func:`app.parsing.jcamp_parser.parse_jcamp`;
-   - Если для одного NIST ID несколько JDX (бывает с разными условиями
-     регистрации) — берёт файл с наибольшим числом точек (proxy для
-     разрешения).
+1. Загружает subset-CSV.
+2. Подгружает каталог NistChemPy (name, cas_rn, inchi, inchi_key).
+3. Для каждого NIST ID:
+   - Глобит ``{ID}_IR_*.jdx`` в ``--jdx-dir``;
+   - Парсит каждый вариант через :func:`app.parsing.jcamp_parser.parse_jcamp`,
+     выбирает с наибольшим n_points (proxy для разрешения);
    - Проверяет coverage 400–4000 см⁻¹ ≥ 80%, валидность InChI/SMILES.
-4. Дедуплицирует по ``inchi_key`` (если разные NIST ID соответствуют
-   одной молекуле — оставляет первое вхождение).
-5. Пишет ``predefense_spectra.parquet``: ``id``, ``inchi_key``, ``smiles``,
-   ``spectrum_raw``, ``wavenumbers_raw``, ``name``, ``cas``, ``state``
-   (gas/liquid/solid/solution или null).
+4. Дедуплицирует по ``inchi_key``.
+5. Пишет parquet: ``id``, ``inchi_key``, ``smiles``, ``spectrum_raw``,
+   ``wavenumbers_raw``, ``name``, ``cas``, ``state`` (заполняется None —
+   NistChemPy не отдаёт фазу в ``get_all_data``).
 
 Запуск:
-    python -m ml.scripts.data_collection.merge_predefense \\
-        [--subset-ids ml/data/processed/predefense_subset_ids.csv] \\
-        [--compounds-csv ml/data/raw/nist/nist_compounds.csv] \\
-        [--ir-info-csv ml/data/raw/nist/nist_ir_info.csv] \\
-        [--jdx-dir ml/data/raw/nist] \\
-        [--output ml/data/processed/predefense_spectra.parquet] \\
+    python -m ml.scripts.data_collection.merge_nist_dataset \\
+        [--ids       ml/data/processed/predefense_subset_ids.csv] \\
+        [--catalog   ml/data/raw/nist/nist_compounds.csv] \\
+        [--jdx-dir   ml/data/raw/nist] \\
+        [--output    ml/data/processed/predefense_spectra.parquet] \\
         [--quarantine ml/data/quarantine]
 """
 
@@ -105,22 +100,15 @@ def _quarantine(quarantine_dir: Path, reason: _RejectionReason, source_path: Pat
 def _resolve_jdx_paths(
     nist_id: str,
     subset_path: Path | None,
-    ir_info: pd.DataFrame | None,
     jdx_dir: Path,
 ) -> list[Path]:
-    """Список JDX-файлов для NIST ID: один или несколько (разные условия)."""
+    """Список JDX-файлов для NIST ID: один или несколько (разные индексы)."""
     paths: list[Path] = []
     if subset_path is not None and subset_path.exists():
         paths.append(subset_path)
-    if ir_info is not None and "file" in ir_info.columns:
-        for value in ir_info.loc[ir_info["nist_id"] == nist_id, "file"].dropna().tolist():
-            candidate = jdx_dir / str(value)
-            if candidate.exists() and candidate not in paths:
-                paths.append(candidate)
-    if not paths:
-        for fallback in (jdx_dir / f"{nist_id}.jdx", jdx_dir / f"IR_{nist_id}.jdx"):
-            if fallback.exists():
-                paths.append(fallback)
+    for candidate in sorted(jdx_dir.glob(f"{nist_id}_IR_*.jdx")):
+        if candidate not in paths:
+            paths.append(candidate)
     return paths
 
 
@@ -140,36 +128,26 @@ def _pick_best_spectrum(paths: list[Path]) -> tuple[Path, Any] | None:
     return best
 
 
-def _state_for(nist_id: str, ir_info: pd.DataFrame | None) -> str | None:
-    if ir_info is None or "state" not in ir_info.columns:
-        return None
-    values = ir_info.loc[ir_info["nist_id"] == nist_id, "state"].dropna().tolist()
-    return str(values[0]) if values else None
-
-
-def merge_predefense(
+def merge_nist_dataset(
     *,
-    subset_csv: Path,
-    compounds_csv: Path,
-    ir_info_csv: Path | None,
+    ids_csv: Path,
+    catalog_csv: Path,
     jdx_dir: Path,
     output_parquet: Path,
     quarantine_dir: Path,
 ) -> dict[str, int]:
     """Полный merge-пайплайн. Возвращает счётчики для логирования/тестов."""
-    if not subset_csv.exists():
-        raise FileNotFoundError(f"subset_csv не найден: {subset_csv}")
-    if not compounds_csv.exists():
-        raise FileNotFoundError(f"compounds_csv не найден: {compounds_csv}")
+    if not ids_csv.exists():
+        raise FileNotFoundError(f"ids_csv не найден: {ids_csv}")
+    if not catalog_csv.exists():
+        raise FileNotFoundError(f"catalog_csv не найден: {catalog_csv}")
 
-    subset = pd.read_csv(subset_csv)
+    subset = pd.read_csv(ids_csv)
     subset = subset.drop_duplicates(subset="nist_id", keep="first").reset_index(drop=True)
     log.info("subset_loaded", rows=len(subset))
 
-    compounds = pd.read_csv(compounds_csv).set_index("nist_id", drop=False)
-    ir_info: pd.DataFrame | None = None
-    if ir_info_csv is not None and ir_info_csv.exists():
-        ir_info = pd.read_csv(ir_info_csv)
+    catalog = pd.read_csv(catalog_csv, dtype="str").set_index("ID", drop=False)
+    log.info("catalog_loaded", rows=len(catalog))
 
     rows: list[dict[str, Any]] = []
     counters: dict[str, int] = {
@@ -181,9 +159,11 @@ def merge_predefense(
 
     for _, entry in tqdm(subset.iterrows(), total=len(subset), desc="merge"):
         nist_id = str(entry["nist_id"])
-        subset_path = Path(entry["jdx_path"]) if "jdx_path" in entry else None
+        subset_path = Path(entry["jdx_path"]) if "jdx_path" in entry and pd.notna(
+            entry.get("jdx_path")
+        ) else None
 
-        candidates = _resolve_jdx_paths(nist_id, subset_path, ir_info, jdx_dir)
+        candidates = _resolve_jdx_paths(nist_id, subset_path, jdx_dir)
         if not candidates:
             counters["rejected"] += 1
             counters["jdx_not_found"] = counters.get("jdx_not_found", 0) + 1
@@ -214,8 +194,8 @@ def merge_predefense(
             )
             continue
 
-        compound_row = compounds.loc[nist_id] if nist_id in compounds.index else None
-        inchi = str(compound_row["inchi"]) if compound_row is not None else ""
+        catalog_row = catalog.loc[nist_id] if nist_id in catalog.index else None
+        inchi = str(catalog_row["inchi"]) if catalog_row is not None else ""
         if not inchi.startswith("InChI="):
             counters["rejected"] += 1
             counters["missing_inchi_in_catalog"] = counters.get("missing_inchi_in_catalog", 0) + 1
@@ -232,7 +212,10 @@ def merge_predefense(
             )
             continue
         smiles = Chem.MolToSmiles(mol)
-        inchi_key = str(compound_row.get("inchi_key") or InchiToInchiKey(inchi))
+        catalog_inchi_key = catalog_row.get("inchi_key") if catalog_row is not None else None
+        inchi_key = str(catalog_inchi_key) if (
+            catalog_inchi_key is not None and pd.notna(catalog_inchi_key)
+        ) else InchiToInchiKey(inchi)
 
         rows.append(
             {
@@ -240,16 +223,16 @@ def merge_predefense(
                 "smiles": smiles,
                 "spectrum_raw": spectrum.intensities.astype(np.float32).tolist(),
                 "wavenumbers_raw": spectrum.wavenumbers.astype(np.float32).tolist(),
-                "name": compound_row.get("name") if compound_row is not None else None,
-                "cas": compound_row.get("cas") if compound_row is not None else None,
-                "state": _state_for(nist_id, ir_info),
+                "name": catalog_row.get("name") if catalog_row is not None else None,
+                "cas": catalog_row.get("cas_rn") if catalog_row is not None else None,
+                "state": None,
                 "nist_id": nist_id,
             }
         )
         counters["valid"] += 1
 
     if not rows:
-        raise RuntimeError("merge_predefense: ни один спектр не прошёл валидацию")
+        raise RuntimeError("merge_nist_dataset: ни один спектр не прошёл валидацию")
 
     df = pd.DataFrame(rows)
     before = len(df)
@@ -261,7 +244,7 @@ def merge_predefense(
     output_parquet.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output_parquet, index=False)
     log.info(
-        "merge_predefense_done",
+        "merge_nist_dataset_done",
         output=str(output_parquet),
         **{k: v for k, v in counters.items() if v},
     )
@@ -271,19 +254,14 @@ def merge_predefense(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--subset-ids",
+        "--ids",
         type=Path,
         default=_ML_ROOT / "data" / "processed" / "predefense_subset_ids.csv",
     )
     parser.add_argument(
-        "--compounds-csv",
+        "--catalog",
         type=Path,
         default=_ML_ROOT / "data" / "raw" / "nist" / "nist_compounds.csv",
-    )
-    parser.add_argument(
-        "--ir-info-csv",
-        type=Path,
-        default=_ML_ROOT / "data" / "raw" / "nist" / "nist_ir_info.csv",
     )
     parser.add_argument("--jdx-dir", type=Path, default=_ML_ROOT / "data" / "raw" / "nist")
     parser.add_argument(
@@ -294,10 +272,9 @@ def main() -> None:
     parser.add_argument("--quarantine", type=Path, default=_ML_ROOT / "data" / "quarantine")
     args = parser.parse_args()
 
-    stats = merge_predefense(
-        subset_csv=args.subset_ids,
-        compounds_csv=args.compounds_csv,
-        ir_info_csv=args.ir_info_csv if args.ir_info_csv.exists() else None,
+    stats = merge_nist_dataset(
+        ids_csv=args.ids,
+        catalog_csv=args.catalog,
         jdx_dir=args.jdx_dir,
         output_parquet=args.output,
         quarantine_dir=args.quarantine,

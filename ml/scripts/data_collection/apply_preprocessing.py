@@ -1,6 +1,6 @@
 """Пакетная предобработка сырого parquet'а через backend/app/preprocessing.
 
-Читает ``predefense_spectra.parquet`` (результат merge_predefense), прогоняет
+Читает ``predefense_spectra.parquet`` (результат merge_nist_dataset), прогоняет
 каждый ряд через :func:`app.preprocessing.pipeline.preprocess` и сохраняет
 ``predefense_normalized.parquet`` со столбцом ``spectrum`` фиксированной длины
 3601 и ``wavenumbers`` (целевая сетка). Метаданные оригинального ряда
