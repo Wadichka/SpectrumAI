@@ -65,6 +65,18 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="каталог, в котором создаётся подкаталог по имени модели",
     )
     parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
+    parser.add_argument(
+        "--phase",
+        type=int,
+        default=1,
+        choices=(1, 2, 3),
+        help="фаза стратегии данных для записи в MANIFEST.json (CLAUDE.md §11)",
+    )
+    parser.add_argument(
+        "--data-source",
+        default="synthetic",
+        help="метка источника данных для MANIFEST: synthetic | real_nist_2000 | real_full",
+    )
     return parser.parse_args(argv)
 
 
@@ -117,6 +129,8 @@ def _update_manifest(
     n_vectors: int,
     dim: int,
     source_checkpoint: str,
+    phase: int = 1,
+    data_source: str = "synthetic",
 ) -> None:
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     raw: dict[str, Any] = (
@@ -124,18 +138,23 @@ def _update_manifest(
     )
     models = list(raw.get("models", []))
     models = [m for m in models if not (m.get("name") == name and m.get("version") == version)]
+    notes_by_phase = {
+        1: "Фаза 1: IndexFlatIP на L2-нормированных молекулярных эмбеддингах (синтетика).",
+        2: "Фаза 2 (предзащита): IndexFlatIP на ~2000 NIST-соединений.",
+        3: "Фаза 3 (финал): IndexFlatIP на расширенном датасете.",
+    }
     models.append(
         {
             "name": name,
             "version": version,
             "type": "faiss_index",
             "file": relative_file,
-            "phase": 1,
-            "data_source": "synthetic",
+            "phase": int(phase),
+            "data_source": data_source,
             "built_at": dt.date.today().isoformat(),
             "source_checkpoint": source_checkpoint,
             "metrics": {"n_vectors": int(n_vectors), "dim": int(dim)},
-            "notes": "Этап 6 фазы 1. IndexFlatIP на L2-нормированных молекулярных эмбеддингах.",
+            "notes": notes_by_phase.get(int(phase), ""),
         }
     )
     raw["models"] = models
@@ -229,6 +248,8 @@ def main(argv: list[str] | None = None) -> None:
         n_vectors=int(index.ntotal),
         dim=dim,
         source_checkpoint=relative_checkpoint,
+        phase=int(args.phase),
+        data_source=str(args.data_source),
     )
     log.info("manifest_updated", path=str(manifest_path))
 

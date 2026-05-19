@@ -46,6 +46,39 @@
         "dim": 128
       },
       "notes": "Этап 6 фазы 1. IndexFlatIP на L2-нормированных молекулярных эмбеддингах."
+    },
+    {
+      "name": "cnn1d-predefense",
+      "version": "0.5.0",
+      "file": "cnn1d-predefense-0.5.0/best.pt",
+      "phase": 2,
+      "data_source": "real_nist_2000",
+      "trained_at": "TODO_after_kaggle",
+      "metrics": {
+        "macro_f1": null,
+        "micro_f1": null,
+        "precision": null,
+        "recall": null,
+        "map": null
+      },
+      "notes": "Этап 19 фазы 2. Заполните metrics после Kaggle-сессии (см. ml/experiments/predefense/metrics.json)."
+    },
+    {
+      "name": "contrastive-predefense",
+      "version": "0.5.0",
+      "file": "contrastive-predefense-0.5.0/best.pt",
+      "phase": 2,
+      "data_source": "real_nist_2000",
+      "trained_at": "TODO_after_kaggle",
+      "metrics": {
+        "macro_f1": null,
+        "top_1": null,
+        "top_5": null,
+        "top_10": null,
+        "mrr": null,
+        "ndcg_at_10": null
+      },
+      "notes": "Этап 19 фазы 2. Заполните metrics после Kaggle-сессии."
     }
   ]
 }
