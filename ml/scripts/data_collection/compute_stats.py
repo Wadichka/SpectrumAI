@@ -48,6 +48,12 @@ def compute_stats(input_parquet: Path, output_json: Path) -> dict[str, object]:
     rare_classes = [name for name, count in counts.items() if count < _RARE_CLASS_THRESHOLD]
     multi_label_density = float(labels.sum(axis=1).mean())
 
+    state_counts: dict[str, int] = {}
+    if "state" in df.columns:
+        # NaN/None трактуем как «unknown».
+        normalized = df["state"].fillna("unknown").astype(str)
+        state_counts = normalized.value_counts().to_dict()
+
     stats: dict[str, object] = {
         "total_spectra": len(df),
         "spectrum_length": len(df.iloc[0]["spectrum"]),
@@ -61,6 +67,7 @@ def compute_stats(input_parquet: Path, output_json: Path) -> dict[str, object]:
             "max": int(labels.sum(axis=1).max()),
             "median": int(np.median(labels.sum(axis=1))),
         },
+        "state_distribution": state_counts,
     }
 
     output_json.parent.mkdir(parents=True, exist_ok=True)
