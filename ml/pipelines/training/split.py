@@ -80,4 +80,64 @@ def stratified_multilabel_split(
     )
 
 
-__all__ = ["stratified_multilabel_split"]
+def split_by_inchi_key(
+    inchi_keys: list[str] | npt.NDArray[Any],
+    *,
+    ratios: tuple[float, float, float] = (0.70, 0.15, 0.15),
+    seed: int = 42,
+) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.int64], npt.NDArray[np.int64]]:
+    """Сплит индексов по InChI Key — без утечки одной молекулы между сплитами.
+
+    Используется в предзащитном обучении (фаза 2, этап 19): для одной
+    молекулы (одинаковый InChI Key) могут быть несколько спектров (разные
+    условия регистрации); если они окажутся одновременно в train и val,
+    метрики val будут оптимистично смещены.
+
+    Алгоритм:
+    1. Уникальные InChI Key перемешиваются с фиксированным seed.
+    2. Распределяются по сплитам пропорционально ``ratios``.
+    3. Для каждого InChI Key собираются все индексы исходного массива.
+
+    Args:
+        inchi_keys: массив InChI Key для каждого спектра (длина N).
+        ratios: доли train, val, test (сумма ≈ 1).
+        seed: random_state для shuffle.
+
+    Returns:
+        Тройка массивов индексов (train, val, test).
+    """
+    if abs(sum(ratios) - 1.0) > 1e-6:
+        raise ValueError(f"сумма ratios должна равняться 1.0, получено {sum(ratios)}")
+
+    keys = np.asarray(inchi_keys)
+    unique_keys = np.unique(keys)
+    rng = np.random.default_rng(seed)
+    rng.shuffle(unique_keys)
+
+    n_unique = len(unique_keys)
+    train_cut = int(n_unique * ratios[0])
+    val_cut = train_cut + int(n_unique * ratios[1])
+
+    train_keys = set(unique_keys[:train_cut])
+    val_keys = set(unique_keys[train_cut:val_cut])
+    # Остальное — test, чтобы не потерять хвост из-за округлений.
+
+    train_idx: list[int] = []
+    val_idx: list[int] = []
+    test_idx: list[int] = []
+    for i, key in enumerate(keys):
+        if key in train_keys:
+            train_idx.append(i)
+        elif key in val_keys:
+            val_idx.append(i)
+        else:
+            test_idx.append(i)
+
+    return (
+        np.asarray(train_idx, dtype=np.int64),
+        np.asarray(val_idx, dtype=np.int64),
+        np.asarray(test_idx, dtype=np.int64),
+    )
+
+
+__all__ = ["split_by_inchi_key", "stratified_multilabel_split"]
