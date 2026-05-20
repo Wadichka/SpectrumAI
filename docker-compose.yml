@@ -17,6 +17,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-spectrumai}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-spectrumai}
       POSTGRES_DB: ${POSTGRES_DB:-spectrumai}
+    # Локальный проброс на хост для alembic/seed-скриптов из .venv.
+    # В прод-развёртывании можно убрать — backend ходит по внутренней сети.
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -29,6 +33,8 @@ services:
     image: redis:7-alpine
     container_name: spectrumai-redis
     restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -49,9 +55,9 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
-      ML_CONTRASTIVE_CHECKPOINT: /models/ircnn-contrastive-0.2.0/best.pt
-      ML_CNN_CHECKPOINT: /models/ircnn-multilabel-0.1.0/best.pt
-      ML_FAISS_ROOT: /models/faiss/ircnn-contrastive-0.2.0
+      ML_CONTRASTIVE_CHECKPOINT: ${ML_CONTRASTIVE_CHECKPOINT:-/models/checkpoints/contrastive-predefense-0.5.0/best.pt}
+      ML_CNN_CHECKPOINT: ${ML_CNN_CHECKPOINT:-/models/checkpoints/cnn1d-predefense-0.5.0/best.pt}
+      ML_FAISS_ROOT: ${ML_FAISS_ROOT:-/models/faiss/contrastive-predefense-0.5.0}
       ML_DEVICE: ${ML_DEVICE:-cpu}
     volumes:
       - ./models:/models:ro

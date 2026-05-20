@@ -179,7 +179,12 @@ def main(argv: list[str] | None = None) -> None:
 
     frame = pd.read_parquet(parquet, engine="pyarrow")
     smiles = [str(s) for s in frame["smiles"].to_list()]
-    compound_ids = [int(cid) for cid in frame["compound_id"].to_list()]
+    if "compound_id" in frame.columns:
+        compound_ids = [int(cid) for cid in frame["compound_id"].to_list()]
+    elif "id" in frame.columns:
+        compound_ids = [int(cid) for cid in frame["id"].to_list()]
+    else:
+        compound_ids = list(range(len(smiles)))
     log.info("dataset_loaded", rows=len(smiles), parquet=str(parquet))
 
     embeddings = _embed_batches(tower, smiles, batch_size=int(args.batch_size), device=device)

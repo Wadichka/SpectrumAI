@@ -152,7 +152,11 @@ def seed_compounds_session(
         spectrum = _row_to_spectrum(compound.id, row.get("cas"), source)
         session.add(spectrum)
 
-        labels = row.get("labels") or []
+        raw_labels = row.get("labels")
+        if raw_labels is None:
+            labels: Iterable[int] = []
+        else:
+            labels = list(raw_labels)
         links = _row_to_group_links(compound.id, labels, group_id_by_name)
         counters["group_links"] += len(links)
         if links:

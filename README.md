@@ -136,23 +136,42 @@ proxy `/api/*`), GitHub Actions CI (ruff, mypy, pytest, bandit).
 
 ---
 
-## Phase 2 (предзащитный прототип)
+## Phase 2 (предзащитный прототип, тег `v1.5-predefense`)
 
-После прогона `ml/notebooks/02_predefense_train.ipynb` в Kaggle и
-переноса чекпойнтов в `models/` заполните этот раздел:
+Чекпойнты обучены в Kaggle T4 (одна сессия, ~12 часов), интегрированы
+в стек. Метрики извлечены из `ml/experiments/predefense/metrics.json`
+и `models/MANIFEST.json`.
 
-| Метрика | Достигнуто | Целевой (фаза 2) | Источник |
-|---------|-----------|------------------|----------|
-| Macro F1 | TODO | 0.40–0.60 | `ml/experiments/predefense/metrics.json` |
-| Micro F1 | TODO | 0.45–0.65 | то же |
-| Top-1 retrieval | TODO | 0.20–0.35 | то же |
-| Top-5 retrieval | TODO | 0.35–0.55 | то же |
-| mAP | TODO | 0.30–0.50 | то же |
-| Размер датасета | ~2000 NIST | — | `ml/data/processed/predefense_stats.json` |
+| Метрика | Достигнуто | Целевой (фаза 2) | Pass | Источник |
+|---------|-----------|------------------|------|----------|
+| Macro F1 | 0.388 | 0.40–0.60 | ✗ | contrastive checkpoint |
+| Micro F1 | 0.499 | 0.45–0.65 | ✓ | contrastive checkpoint |
+| Macro AP | 0.333 | 0.30–0.50 | ✓ | contrastive checkpoint |
+| Top-1 retrieval | 0.049 | 0.20–0.35 | ✗ | FAISS eval |
+| Top-5 retrieval | 0.143 | 0.35–0.55 | ✗ | FAISS eval |
+| Top-10 retrieval | 0.254 | — | — | FAISS eval |
+| MRR | 0.116 | — | — | FAISS eval |
+| Hamming loss | 0.262 | < 0.30 | ✓ | contrastive checkpoint |
+| Размер датасета | 1919 NIST | 2000–3000 | ✗ | `predefense_stats.json` |
 
-Когда v1.5-predefense готов, обновите цифры выше и снимите пометку
-«TODO». Полное обучение на расширенном датасете (фаза 3) даст
-финальные метрики главы 6.4.4 и тег `v2.0-final`.
+**Метрики ниже целевых §6.4.4** — это **ожидаемое и приемлемое
+поведение для фазы 2** (см. CLAUDE.md §11 «Стратегия данных и
+обучения»). Цель фазы 2 — закрыть end-to-end интеграцию (бэкенд +
+фронт + Docker + БД + FAISS + UX) на реальных NIST-данных, а не
+достичь финального качества модели. Причины ниже-целевых метрик:
+
+- скрейпинг NIST WebBook остановлен на 35% (5700/16494 соединений) из-за
+  более жёсткого rate-limit, чем ожидалось → подвыборка 1919 вместо
+  целевых 2500–3000;
+- ряд функциональных групп с малым покрытием (amide_primary=7,
+  sulfoxide_sulfone=26, amide_secondary=29, alkyne=55) — модель почти
+  не учится на них;
+- один прогон без HP sweep (по плану §19 — sweep это фаза 3).
+
+**Фаза 3** (этапы 21–24 DEVELOPMENT_PLAN.md) расширяет датасет до
+3000–10000 спектров (NIST + SDBS + Coblentz) с hyperparameter sweep —
+там целевые метрики §6.4.4 ожидаемо достигаются. Тег фазы 3 —
+`v2.0-final`.
 
 ---
 

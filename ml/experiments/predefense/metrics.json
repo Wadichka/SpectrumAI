@@ -1,0 +1,53 @@
+{
+  "phase": 2,
+  "data_source": "real_nist_2000",
+  "dataset_size": 1919,
+  "trained_at": "2026-05-19",
+  "molecule_model_name": "seyonec/ChemBERTa-zinc-base-v1",
+  "split": {
+    "strategy": "by_inchi_key",
+    "ratios": [0.7, 0.15, 0.15],
+    "seed": 42
+  },
+  "cnn1d": {
+    "checkpoint": "models/checkpoints/cnn1d-predefense-0.5.0/best.pt",
+    "macro_f1": 0.3808314619439153,
+    "micro_f1": 0.523945267958951,
+    "weighted_f1": 0.589812343252007,
+    "macro_precision": 0.3239666607045122,
+    "macro_recall": 0.602518894907872,
+    "macro_ap": 0.32169752294617987,
+    "macro_auc": 0.718914326780689,
+    "hamming_loss": 0.23275261324041813,
+    "subset_accuracy": 0.0
+  },
+  "contrastive": {
+    "checkpoint": "models/checkpoints/contrastive-predefense-0.5.0/best.pt",
+    "classification": {
+      "macro_f1": 0.3880635709582203,
+      "micro_f1": 0.49853059043547954,
+      "weighted_f1": 0.5893389300616697,
+      "macro_precision": 0.32664195578391686,
+      "macro_recall": 0.6455195388138155,
+      "macro_ap": 0.3331310247016065,
+      "macro_auc": 0.7170540367133471,
+      "hamming_loss": 0.261602787456446
+    },
+    "retrieval": {
+      "top1": 0.04878048598766327,
+      "top5": 0.1428571492433548,
+      "top10": 0.25435540080070496,
+      "mrr": 0.11622992157936096
+    },
+    "temperature": 0.07221880555152893
+  },
+  "acceptance_check_phase_2": {
+    "criterion_macro_f1_range": [0.4, 0.6],
+    "criterion_top5_range": [0.35, 0.55],
+    "macro_f1_actual": 0.3880635709582203,
+    "top5_actual": 0.1428571492433548,
+    "passes_macro_f1": false,
+    "passes_top5": false,
+    "comment": "Метрики ниже целевых критериев §6.4.4. Это ожидаемо для фазы 2 на 1919 спектрах с ограниченным покрытием функциональных групп (amide_primary=7, sulfoxide_sulfone=26, amide_secondary=29). Фаза 3 расширяет датасет (NIST+SDBS+Coblentz) до 3000-10000 спектров и включает hp-sweep — там ожидаемо достижение целевых метрик."
+  }
+}

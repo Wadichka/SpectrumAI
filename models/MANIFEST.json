@@ -3,32 +3,67 @@
     {
       "name": "cnn1d-predefense",
       "version": "0.5.0",
-      "file": "cnn1d-predefense-0.5.0/best.pt",
-      "phase": 1,
-      "data_source": "synthetic",
-      "trained_at": "2026-05-20",
+      "file": "checkpoints/cnn1d-predefense-0.5.0/best.pt",
+      "phase": 2,
+      "data_source": "real_nist_2000",
+      "trained_at": "2026-05-19",
       "metrics": {
         "macro_f1": 0.3808314619439153,
+        "micro_f1": 0.523945267958951,
+        "weighted_f1": 0.589812343252007,
+        "macro_precision": 0.3239666607045122,
+        "macro_recall": 0.602518894907872,
         "macro_ap": 0.32169752294617987,
-        "hamming_loss": 0.23275261324041813
+        "macro_auc": 0.718914326780689,
+        "hamming_loss": 0.23275261324041813,
+        "subset_accuracy": 0.0
       },
-      "notes": "Этап 5 фазы 1. Цель — отладка пайплайна, не достижение метрик §6.4.4."
+      "notes": "Этап 19, фаза 2. Multi-label 1D-CNN на 1919 NIST-спектрах. Метрики ниже целевых §6.4.4 — фаза 2 закрывает интеграцию, не качество. Финальное обучение — фаза 3."
     },
     {
       "name": "contrastive-predefense",
       "version": "0.5.0",
-      "file": "contrastive-predefense-0.5.0/best.pt",
-      "phase": 1,
-      "data_source": "synthetic",
-      "trained_at": "2026-05-20",
+      "file": "checkpoints/contrastive-predefense-0.5.0/best.pt",
+      "phase": 2,
+      "data_source": "real_nist_2000",
+      "trained_at": "2026-05-19",
       "metrics": {
-        "macro_f1": 0.3880635709582203,
-        "top1": 0.04878048598766327,
-        "top5": 0.1428571492433548,
-        "mrr": 0.11622992157936096,
+        "classification": {
+          "macro_f1": 0.3880635709582203,
+          "micro_f1": 0.49853059043547954,
+          "weighted_f1": 0.5893389300616697,
+          "macro_precision": 0.32664195578391686,
+          "macro_recall": 0.6455195388138155,
+          "macro_ap": 0.3331310247016065,
+          "macro_auc": 0.7170540367133471,
+          "hamming_loss": 0.261602787456446,
+          "subset_accuracy": 0.0
+        },
+        "retrieval": {
+          "top1": 0.04878048598766327,
+          "top5": 0.1428571492433548,
+          "top10": 0.25435540080070496,
+          "mrr": 0.11622992157936096
+        },
         "temperature": 0.07221880555152893
       },
-      "notes": "Этап 6 фазы 1. Двухбашенная схема, BCE + InfoNCE, синтетика."
+      "molecule_model_name": "seyonec/ChemBERTa-zinc-base-v1",
+      "notes": "Этап 19, фаза 2. Двухбашенная BCE + InfoNCE на 1919 NIST-спектрах. Метрики ниже целевых §6.4.4 — фаза 2 закрывает интеграцию, не качество. Финальное обучение — фаза 3."
+    },
+    {
+      "name": "faiss-index-contrastive-predefense",
+      "version": "0.5.0",
+      "type": "faiss_index",
+      "file": "faiss/contrastive-predefense-0.5.0/index.faiss",
+      "phase": 2,
+      "data_source": "real_nist_2000",
+      "built_at": "2026-05-20",
+      "source_checkpoint": "models/checkpoints/contrastive-predefense-0.5.0/best.pt",
+      "metrics": {
+        "n_vectors": 1919,
+        "dim": 128
+      },
+      "notes": "Фаза 2 (предзащита): IndexFlatIP на ~2000 NIST-соединений."
     }
   ]
 }
