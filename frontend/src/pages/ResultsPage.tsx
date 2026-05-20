@@ -97,6 +97,8 @@ export default function ResultsPage() {
       <SpectrumChart
         spectrum={response.spectrum ?? null}
         spectrumLength={response.spectrum_length}
+        rawSpectrum={response.raw_spectrum ?? null}
+        rawWavenumbers={response.raw_wavenumbers ?? null}
         gradcam={response.gradcam ?? null}
         selectedGroupCode={selectedCode}
       />

@@ -62,6 +62,8 @@ class IdentificationResponse(BaseModel):
     candidates: list[CompoundCandidate]
     gradcam: GradCamPayload | None = None
     spectrum: list[float] | None = None
+    raw_spectrum: list[float] | None = None
+    raw_wavenumbers: list[float] | None = None
     spectrum_length: int = Field(ge=1)
     model_versions: dict[str, str]
     threshold_mode: str

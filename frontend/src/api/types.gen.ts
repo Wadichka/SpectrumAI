@@ -157,6 +157,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/history/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Полный ответ /identify по сохранённой записи истории
+         * @description Восстанавливает полный сериализованный ответ /identify из БД.
+         *
+         *     Нужно UI: при открытии записи из истории ResultsPage подтягивает
+         *     свежие predictions/candidates/gradcam именно этой записи, а не
+         *     «последний живой» state из in-memory store. См. §20 фазы 2.
+         */
+        get: operations["get_history_detail_api_v1_history__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/settings": {
         parameters: {
             query?: never;
@@ -186,6 +210,29 @@ export interface paths {
         get: operations["list_functional_groups_api_v1_functional_groups_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/identification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Identification Report
+         * @description Принимает полный ответ /identify и возвращает PDF.
+         *
+         *     Возвращает поток ``application/pdf`` с заголовком ``Content-Disposition``
+         *     для скачивания. Имя файла включает ``request_id`` если он есть.
+         */
+        post: operations["export_identification_report_api_v1_reports_identification_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -467,6 +514,10 @@ export interface components {
             gradcam?: components["schemas"]["GradCamPayload"] | null;
             /** Spectrum */
             spectrum?: number[] | null;
+            /** Raw Spectrum */
+            raw_spectrum?: number[] | null;
+            /** Raw Wavenumbers */
+            raw_wavenumbers?: number[] | null;
             /** Spectrum Length */
             spectrum_length: number;
             /** Model Versions */
@@ -880,6 +931,37 @@ export interface operations {
             };
         };
     };
+    get_history_detail_api_v1_history__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdentificationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_settings_api_v1_settings_get: {
         parameters: {
             query?: never;
@@ -949,6 +1031,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FunctionalGroupResponse"][];
+                };
+            };
+        };
+    };
+    export_identification_report_api_v1_reports_identification_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentificationResponse"];
+            };
+        };
+        responses: {
+            /** @description PDF-отчёт об идентификации */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -80,10 +80,16 @@ class IdentificationService:
             if include_gradcam
             else None
         )
+        # Прикрепляем сырые intensities и native NIST-сетку, чтобы UI мог
+        # переключаться между «raw» (по умолчанию — понятнее химику) и
+        # «processed» (после resample/baseline/smoothing/SNV).
+        update: dict[str, object] = {
+            "raw_spectrum": [float(v) for v in raw.intensities.tolist()],
+            "raw_wavenumbers": [float(v) for v in raw.wavenumbers.tolist()],
+        }
         if gradcam is not None:
-            result = base_result.model_copy(update={"gradcam": gradcam})
-        else:
-            result = base_result
+            update["gradcam"] = gradcam
+        result = base_result.model_copy(update=update)
         request_id = self._persist_history(result, filename=filename)
         return result, request_id
 

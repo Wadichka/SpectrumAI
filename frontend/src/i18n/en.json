@@ -74,6 +74,8 @@
     "lost_session.cta": "Back to identify",
     "spectrum": {
       "title": "IR spectrum",
+      "raw": "Raw",
+      "processed": "Processed",
       "absorbance": "Absorbance",
       "transmittance": "Transmittance",
       "unavailable": "Spectrum data is not available in the current response."

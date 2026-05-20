@@ -74,6 +74,8 @@
     "lost_session.cta": "К идентификации",
     "spectrum": {
       "title": "ИК-спектр",
+      "raw": "Сырой",
+      "processed": "Обработанный",
       "absorbance": "Поглощение",
       "transmittance": "Пропускание",
       "unavailable": "Спектр недоступен в текущем ответе сервера."

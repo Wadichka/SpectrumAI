@@ -75,6 +75,12 @@ class IdentificationResult(BaseModel):
     # отдаёт её, чтобы ResultsPage мог нарисовать спектр без дополнительного
     # запроса; raw-данные не хранятся.
     spectrum: list[float] | None = None
+    # Сырые intensities и wavenumbers в native NIST-сетке (до resample/baseline/
+    # smoothing/normalize). UI показывает их по умолчанию — химику понятнее
+    # необработанный спектр. None у исторических записей, созданных до этого
+    # поля (graceful fallback на processed).
+    raw_spectrum: list[float] | None = None
+    raw_wavenumbers: list[float] | None = None
 
 
 __all__ = [
