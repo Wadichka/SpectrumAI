@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import io
 from datetime import datetime
+from pathlib import Path
 
 import matplotlib
 
@@ -41,28 +42,52 @@ from reportlab.platypus import (
 
 from app.domain.dto import IdentificationResult
 
-# Попытка зарегистрировать DejaVuSans для корректного отображения кириллицы.
-# В Debian-slim шрифт есть в /usr/share/fonts/truetype/dejavu/.
-_FONT_CANDIDATES = (
+# DejaVu Sans (Regular + Bold) даёт корректную кириллицу в Paragraph/Table.
+# В Docker backend пакет fonts-dejavu установлен в Dockerfile (runtime stage).
+# Локально под Windows пользуем системный Arial; в остальных случаях fallback
+# на Helvetica — без кириллицы, но без падения генерации.
+_REGULAR_CANDIDATES = (
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "C:/Windows/Fonts/arial.ttf",
+)
+_BOLD_CANDIDATES = (
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "C:/Windows/Fonts/arialbd.ttf",
 )
 
 
-def _register_unicode_font() -> str:
-    """Регистрирует первый доступный TTF-шрифт с кириллицей. Fallback: Helvetica."""
-    for path in _FONT_CANDIDATES:
-        try:
-            pdfmetrics.registerFont(TTFont("ReportFont", path))
-            return "ReportFont"
-        except Exception:
-            continue
-    return "Helvetica"
+def _register_unicode_font() -> tuple[str, str]:
+    """Регистрирует TTF-шрифты для кириллицы.
+
+    Возвращает (regular_name, bold_name). При невозможности зарегистрировать
+    Regular — оба значения = ``"Helvetica"`` (кириллица не отобразится, но
+    PDF соберётся). Если есть Regular, но нет Bold — bold подставляем Regular.
+    """
+    regular = next((p for p in _REGULAR_CANDIDATES if Path(p).exists()), None)
+    if regular is None:
+        return "Helvetica", "Helvetica"
+    pdfmetrics.registerFont(TTFont("ReportFont", regular))
+    bold = next((p for p in _BOLD_CANDIDATES if Path(p).exists()), None)
+    if bold is not None:
+        pdfmetrics.registerFont(TTFont("ReportFont-Bold", bold))
+        pdfmetrics.registerFontFamily(
+            "ReportFont",
+            normal="ReportFont",
+            bold="ReportFont-Bold",
+            italic="ReportFont",
+            boldItalic="ReportFont-Bold",
+        )
+        return "ReportFont", "ReportFont-Bold"
+    return "ReportFont", "ReportFont"
 
 
-_UNICODE_FONT = _register_unicode_font()
+_UNICODE_FONT, _UNICODE_FONT_BOLD = _register_unicode_font()
+
+# matplotlib рисует график спектра/Grad-CAM с подписями на русском.
+# DejaVu Sans поставляется с matplotlib, но явно фиксируем семейство —
+# страховка на случай нестандартных rc-файлов.
+plt.rcParams["font.family"] = "DejaVu Sans"
+plt.rcParams["axes.unicode_minus"] = False
 
 
 def _render_spectrum_png(intensities: list[float], length: int) -> bytes:
@@ -127,8 +152,8 @@ def render_identification_report(
 
     styles = getSampleStyleSheet()
     styles["Normal"].fontName = _UNICODE_FONT
-    styles["Heading1"].fontName = _UNICODE_FONT
-    styles["Heading2"].fontName = _UNICODE_FONT
+    styles["Heading1"].fontName = _UNICODE_FONT_BOLD
+    styles["Heading2"].fontName = _UNICODE_FONT_BOLD
 
     story: list[object] = []
 

@@ -48,13 +48,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     SPECTRUMAI_ML_ROOT=/opt/ml
 
-# Runtime-зависимости для rdkit/faiss/scipy + curl для healthcheck.
+# Runtime-зависимости для rdkit/faiss/scipy + curl для healthcheck +
+# fonts-dejavu для кириллицы в PDF-отчётах (см. backend/app/reports/pdf_generator.py).
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libxrender1 \
         libxext6 \
         libsm6 \
         libgomp1 \
         curl \
+        fonts-dejavu \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 1000 app
 
