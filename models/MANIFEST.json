@@ -1,84 +1,34 @@
 {
-  "$schema_version": "1.0",
-  "description": "Реестр обученных моделей SpectrumAI. Заполняется по мере появления моделей. См. CLAUDE.md §11.",
   "models": [
-    {
-      "name": "ircnn-multilabel",
-      "version": "0.1.0",
-      "file": "ircnn-multilabel-0.1.0/best.pt",
-      "phase": 1,
-      "data_source": "synthetic",
-      "trained_at": "2026-05-17",
-      "metrics": {
-        "macro_f1": 0.2174734947688937,
-        "macro_ap": 0.22992954154549655,
-        "hamming_loss": 0.623030303030303
-      },
-      "notes": "Этап 5 фазы 1. Цель — отладка пайплайна, не достижение метрик §6.4.4."
-    },
-    {
-      "name": "ircnn-contrastive",
-      "version": "0.2.0",
-      "file": "ircnn-contrastive-0.2.0/best.pt",
-      "phase": 1,
-      "data_source": "synthetic",
-      "trained_at": "2026-05-17",
-      "metrics": {
-        "macro_f1": 0.214058520335074,
-        "top1": 0.09090909361839294,
-        "top5": 0.24242424964904785,
-        "mrr": 0.19661495089530945,
-        "temperature": 0.07050805538892746
-      },
-      "notes": "Этап 6 фазы 1. Двухбашенная схема, BCE + InfoNCE, синтетика."
-    },
-    {
-      "name": "faiss-index-ircnn-contrastive",
-      "version": "0.2.0",
-      "type": "faiss_index",
-      "file": "faiss/ircnn-contrastive-0.2.0/index.faiss",
-      "phase": 1,
-      "data_source": "synthetic",
-      "built_at": "2026-05-17",
-      "source_checkpoint": "models/ircnn-contrastive-0.2.0/best.pt",
-      "metrics": {
-        "n_vectors": 220,
-        "dim": 128
-      },
-      "notes": "Этап 6 фазы 1. IndexFlatIP на L2-нормированных молекулярных эмбеддингах."
-    },
     {
       "name": "cnn1d-predefense",
       "version": "0.5.0",
       "file": "cnn1d-predefense-0.5.0/best.pt",
-      "phase": 2,
-      "data_source": "real_nist_2000",
-      "trained_at": "TODO_after_kaggle",
+      "phase": 1,
+      "data_source": "synthetic",
+      "trained_at": "2026-05-20",
       "metrics": {
-        "macro_f1": null,
-        "micro_f1": null,
-        "precision": null,
-        "recall": null,
-        "map": null
+        "macro_f1": 0.3808314619439153,
+        "macro_ap": 0.32169752294617987,
+        "hamming_loss": 0.23275261324041813
       },
-      "notes": "Этап 19 фазы 2. Заполните metrics после Kaggle-сессии (см. ml/experiments/predefense/metrics.json)."
+      "notes": "Этап 5 фазы 1. Цель — отладка пайплайна, не достижение метрик §6.4.4."
     },
     {
       "name": "contrastive-predefense",
       "version": "0.5.0",
       "file": "contrastive-predefense-0.5.0/best.pt",
-      "phase": 2,
-      "data_source": "real_nist_2000",
-      "trained_at": "TODO_after_kaggle",
+      "phase": 1,
+      "data_source": "synthetic",
+      "trained_at": "2026-05-20",
       "metrics": {
-        "macro_f1": null,
-        "top_1": null,
-        "top_5": null,
-        "top_10": null,
-        "mrr": null,
-        "ndcg_at_10": null
+        "macro_f1": 0.3880635709582203,
+        "top1": 0.04878048598766327,
+        "top5": 0.1428571492433548,
+        "mrr": 0.11622992157936096,
+        "temperature": 0.07221880555152893
       },
-      "notes": "Этап 19 фазы 2. Заполните metrics после Kaggle-сессии."
+      "notes": "Этап 6 фазы 1. Двухбашенная схема, BCE + InfoNCE, синтетика."
     }
   ]
 }
