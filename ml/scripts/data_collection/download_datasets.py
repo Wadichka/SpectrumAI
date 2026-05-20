@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 from urllib.request import urlretrieve
 
-ROOT = Path(__file__).parent.resolve()
+ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = ROOT / "ml" / "data" / "raw"
 NIST_DIR = DATA_DIR / "nist"
 

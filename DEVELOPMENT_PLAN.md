@@ -414,30 +414,69 @@
 
 ---
 
-## Этап 18. Сбор 2000 спектров из NIST WebBook (предзащитный набор)
+## Этап 18. Сбор полного NIST-датасета через NistChemPy и отбор подвыборки 2000–3000
 
-**Цель:** получить ~1500–2000 валидных реальных ИК-спектров с разметкой функциональных групп за ~3–5 часов.
+**Цель:** скачать все доступные ИК-спектры из NIST Chemistry WebBook через библиотеку NistChemPy (~15–20 тысяч), затем отобрать стратифицированную подвыборку 2000–3000 для предзащитного обучения.
+
+> **Контекст источника.** Изначально предполагалось взять готовый zip-архив из репозитория `IvanChernyshov/NistChemData`, но в текущей версии репозитория данные не лежат напрямую — там только скрипты и метаданные. Сами спектры собираются локально через библиотеку `nistchempy` (тот же автор), которая использует официальные эндпоинты NIST WebBook с rate limit. Время сбора — 5–7 часов, выполняется в фоне.
 
 **Промпт для Claude Code:**
 
-> В корне репозитория лежит готовый скрипт `download_datasets.py` (создан в Cowork-сессии). Запусти `python download_datasets.py --source nist_scrape --count 2000` — он клонирует `chopralab/candiy_spectrum` и скачивает 2000 IR-спектров из NIST WebBook через их скрейпер. Ожидаемое время: 50–90 минут.
+> Этап выполняется в **два захода**: сейчас (подготовка + запуск скрейпинга в фоне) и в следующей сессии (отбор подвыборки + препроцессинг после завершения скрейпинга).
 >
-> После завершения скрейпинга реализуй в `ml/scripts/data_collection/`:
-> 1. `merge_predefense.py` — объединяет сырые JCAMP-DX из `ml/data/raw/nist/` и `inchi.txt` в единый parquet. Дедупликация по InChI Key, валидация: спектр непустой, диапазон волновых чисел покрывает 400–4000 см⁻¹ хотя бы на 80%, SMILES валидный (через RDKit). Битые записи — в `ml/data/quarantine/` с логом причины. Итог: `ml/data/processed/predefense_spectra.parquet` со столбцами `id`, `inchi_key`, `smiles`, `spectrum_raw`, `wavenumbers_raw`, `name`, `cas`.
-> 2. Пакетная предобработка через `backend/app/preprocessing/` — финальный `ml/data/processed/predefense_normalized.parquet` со столбцом `spectrum` фиксированной длины 3601.
-> 3. RDKit-разметка через `ml/pipelines/labeling.py` — добавление колонки `labels`.
-> 4. Сохрани `ml/data/processed/predefense_stats.json` с распределением по функциональным группам, чтобы убедиться, что нет вырожденных классов с < 10 примерами.
+> **Заход 1 — подготовка и запуск скрейпинга:**
+>
+> 1. Активируй `.venv`. Установи `nistchempy==1.0.6` (или последнюю стабильную) через `pip install`. Проверь импорт.
+> 2. Перепиши `download_datasets.py` в корне репозитория. Источник `--source nist_chemdata` теперь использует NistChemPy:
+>    - Получи полный каталог соединений через `nistchempy.get_all_data()` или эквивалент. Сохрани в `ml/data/raw/nist/nist_compounds.csv`.
+>    - По каталогу пройдись итеративно: для каждого соединения проверяй наличие ИК-спектра и скачивай его в JDX-формате в `ml/data/raw/nist/<NIST_ID>_IR_<idx>.jdx`.
+>    - Rate limit ≥ 1 секунда между запросами. Retry с экспоненциальной задержкой при ошибках.
+>    - Прогресс пишется в `ml/data/raw/nist/scrape.log`, не в stdout.
+>    - Идемпотентность: при повторном запуске пропускаются уже скачанные файлы.
+>    - Финальный отчёт в конце лога: сколько соединений просмотрено, сколько ИК-спектров скачано, сколько ошибок.
+> 3. Создай `ml/scripts/data_collection/select_subset.py` — стратифицированный отбор 2000–3000 соединений из полного набора. Стратегия: предварительная RDKit-разметка функциональных групп по SMILES (получаемых из InChI через `Chem.MolFromInchi`), затем балансированный отбор так, чтобы каждая из 20–25 групп была представлена 80–150 примерами. Выход: `ml/data/processed/predefense_subset_ids.csv` со столбцами `nist_id`, `inchi_key`, `smiles`, `target_groups`. CLI-параметры: `--target-size`, `--input-catalog`, `--output`.
+> 4. Перепиши существующий `ml/scripts/data_collection/merge_predefense.py` в `merge_nist_dataset.py` (универсальный, не привязан к слову «predefense»):
+>    - Принимает `--ids <csv>` со списком NIST ID для включения (выход из `select_subset.py`).
+>    - Принимает `--output <parquet>` — имя выходного файла.
+>    - Читает соответствующие JDX из `ml/data/raw/nist/` и метаданные из `nist_compounds.csv`.
+>    - Парсит через библиотеку `jcamp`. Дедупликация по InChI Key (если у соединения несколько спектров — берём один с лучшим разрешением).
+>    - Валидация: спектр непустой, диапазон 400–4000 см⁻¹ хотя бы на 80%, SMILES валидный через RDKit. Битые записи — в `ml/data/quarantine/` с логом причины.
+>    - Выход: parquet со столбцами `id`, `inchi_key`, `smiles`, `spectrum_raw`, `wavenumbers_raw`, `name`, `cas`, `state` (gas/liquid/solid/solution, если доступно).
+> 5. Обнови `docs/DEMO_SCRIPT.md`: убери все упоминания `chopralab/candiy_spectrum` (этот источник больше не используем), замени на NistChemPy. Если в файле есть код-блоки со старыми командами — обнови их.
+> 6. **Согласование плана.** До запуска скрейпинга включи Plan Mode и покажи план изменений + список созданных/перезаписанных файлов. Жди моего подтверждения.
+> 7. После одобрения плана и реализации скриптов запусти скрейпер **в фоновом режиме** с перенаправлением stdout/stderr в файл — НЕ в чат:
+>    ```powershell
+>    # Windows PowerShell
+>    Start-Process -NoNewWindow -RedirectStandardOutput "ml\data\raw\nist\scrape.log" -RedirectStandardError "ml\data\raw\nist\scrape.err" -FilePath ".\.venv\Scripts\python.exe" -ArgumentList "download_datasets.py","--source","nist_chemdata"
+>    ```
+>    Эквивалент для bash:
+>    ```bash
+>    nohup .venv/bin/python download_datasets.py --source nist_chemdata \
+>        > ml/data/raw/nist/scrape.log 2>&1 &
+>    echo "Started, PID=$!"
+>    ```
+>    Дождись подтверждения PID, выйди из bash. **НЕ опрашивай статус каждые несколько минут** — это сжирает контекст. Сообщи мне «скрейпинг запущен в фоне, PID такой-то, занимает 5–7 часов» и остановись.
+>
+> **Заход 2 — после завершения скрейпинга (следующая сессия Claude Code):**
+>
+> 8. Проверь, что скрейпинг завершён успешно (`tail -n 50 ml/data/raw/nist/scrape.log` должен показать финальный отчёт, в `ml/data/raw/nist/` лежит ~15–20 тысяч JDX).
+> 9. Запусти `python ml/scripts/data_collection/select_subset.py --target-size 2500 --input-catalog ml/data/raw/nist/nist_compounds.csv --output ml/data/processed/predefense_subset_ids.csv`.
+> 10. Запусти `python ml/scripts/data_collection/merge_nist_dataset.py --ids ml/data/processed/predefense_subset_ids.csv --output ml/data/processed/predefense_spectra.parquet`.
+> 11. Пакетная предобработка через `backend/app/preprocessing/` — финальный `ml/data/processed/predefense_normalized.parquet` со столбцом `spectrum` длины 3601.
+> 12. RDKit-разметка через `ml/pipelines/labeling.py` — добавление колонки `labels`.
+> 13. Сохрани `ml/data/processed/predefense_stats.json` с распределением по функциональным группам.
 >
 > После сборки переместите `download_datasets.py` из корня репозитория в `ml/scripts/data_collection/` — там ему место по структуре.
 
 **Критерии приёмки:**
-- В `predefense_normalized.parquet` от 1500 до 2000 валидных записей (часть запросов NIST неизбежно отсеется).
-- Распределение по топ-10 функциональным группам в `predefense_stats.json` без явных дыр.
+- В `ml/data/raw/nist/` лежит ~15–20 тысяч JDX-файлов и `nist_compounds.csv` с полным каталогом.
+- В `predefense_normalized.parquet` от 2000 до 3000 валидных записей.
+- Распределение по топ-10 функциональным группам в `predefense_stats.json` сбалансированное; ни одна целевая группа не имеет < 50 примеров.
 - Все спектры — длины 3601.
 
-**Коммит:** `data(predefense): collect 2000 real NIST spectra`.
+**Коммит:** `data(predefense): collect full NIST dataset via NistChemPy and select 2.5K subset`.
 
-**Сколько занимает:** 3–5 часов (скрейпинг + препроцессинг + проверка).
+**Сколько занимает:** ~5–7 часов фонового скрейпинга (без участия Claude Code и Вашего) + 1–2 часа активной работы на подготовку скриптов и обработку результата.
 
 ---
 
