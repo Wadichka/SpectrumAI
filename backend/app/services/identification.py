@@ -37,6 +37,7 @@ class BatchIdentificationItem:
     filename: str
     status: str  # "success" | "error"
     result: IdentificationResult | None
+    request_id: int | None
     error_code: str | None
     error_message: str | None
 
@@ -65,7 +66,12 @@ class IdentificationService:
         filename: str,
         include_gradcam: bool = True,
         top_k: int | None = None,
-    ) -> IdentificationResult:
+    ) -> tuple[IdentificationResult, int]:
+        """Возвращает результат идентификации и id сохранённой записи в БД.
+
+        request_id нужен фронту, чтобы потом открыть запись через
+        GET /api/v1/history/{request_id} (см. §20 фазы 2).
+        """
         raw = parse_spectrum(file_bytes)
         processed = preprocess(raw)
         base_result = await self._inference.predict(processed, top_k=top_k)
@@ -78,8 +84,8 @@ class IdentificationService:
             result = base_result.model_copy(update={"gradcam": gradcam})
         else:
             result = base_result
-        self._persist_history(result, filename=filename)
-        return result
+        request_id = self._persist_history(result, filename=filename)
+        return result, request_id
 
     async def identify_batch(
         self,
@@ -92,7 +98,7 @@ class IdentificationService:
         items: list[BatchIdentificationItem] = []
         for file_bytes, filename in files:
             try:
-                result = await self.identify_one(
+                result, request_id = await self.identify_one(
                     file_bytes=file_bytes,
                     filename=filename,
                     include_gradcam=include_gradcam,
@@ -103,6 +109,7 @@ class IdentificationService:
                         filename=filename,
                         status="success",
                         result=result,
+                        request_id=request_id,
                         error_code=None,
                         error_message=None,
                     )
@@ -113,6 +120,7 @@ class IdentificationService:
                         filename=filename,
                         status="error",
                         result=None,
+                        request_id=None,
                         error_code=type(exc).__name__,
                         error_message=str(exc),
                     )
@@ -158,11 +166,12 @@ class IdentificationService:
             values=[float(v) for v in values.tolist()],
         )
 
-    def _persist_history(self, result: IdentificationResult, *, filename: str) -> None:
+    def _persist_history(self, result: IdentificationResult, *, filename: str) -> int:
         request = IdentificationRequest(
             input_spectrum_path=filename,
             processing_time_ms=int(result.processing_time_ms),
             status="success",
+            result_payload=result.model_dump(mode="json"),
         )
         self._session.add(request)
         self._session.flush()
@@ -182,6 +191,7 @@ class IdentificationService:
                 )
             )
         self._session.commit()
+        return int(request.id)
 
 
 def make_identification_service(

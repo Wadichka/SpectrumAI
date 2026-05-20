@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
@@ -20,6 +21,18 @@ class HistoryEntry:
     processing_time_ms: int | None
     input_filename: str | None
     top_predicted_groups: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class HistoryDetail:
+    request_id: int
+    timestamp: datetime
+    status: str
+    processing_time_ms: int | None
+    input_filename: str | None
+    # Полный сериализованный ответ /identify (может быть None для записей,
+    # созданных до миграции 0002 — таких сейчас нет, но защищаемся).
+    result_payload: dict[str, Any] | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,5 +95,19 @@ class HistoryService:
         ]
         return PaginatedHistory(items=items, page=page, size=size, total=total)
 
+    def get_by_id(self, request_id: int) -> HistoryDetail | None:
+        """Возвращает полный сохранённый ответ /identify по request_id или None."""
+        req = self._session.get(IdentificationRequest, request_id)
+        if req is None:
+            return None
+        return HistoryDetail(
+            request_id=req.id,
+            timestamp=req.timestamp,
+            status=req.status,
+            processing_time_ms=req.processing_time_ms,
+            input_filename=req.input_spectrum_path,
+            result_payload=req.result_payload,
+        )
 
-__all__ = ["HistoryEntry", "HistoryService", "PaginatedHistory"]
+
+__all__ = ["HistoryDetail", "HistoryEntry", "HistoryService", "PaginatedHistory"]

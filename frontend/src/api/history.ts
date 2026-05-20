@@ -1,6 +1,8 @@
 import { apiClient } from "@/api/client";
 import type { components } from "@/api/types.gen";
 
+import type { IdentificationResponse } from "@/api/identify";
+
 export type HistoryEntry = components["schemas"]["HistoryEntryResponse"];
 export type PaginatedHistory = components["schemas"]["PaginatedHistoryResponse"];
 
@@ -18,5 +20,17 @@ export async function fetchHistory(query: HistoryQuery): Promise<PaginatedHistor
   if (query.date_to) params.date_to = query.date_to;
   if (query.status && query.status !== "all") params.status = query.status;
   const { data } = await apiClient.get<PaginatedHistory>("/api/v1/history", { params });
+  return data;
+}
+
+/** Загружает полный сохранённый ответ /identify по request_id. */
+export async function fetchHistoryDetail(
+  requestId: number,
+  signal?: AbortSignal,
+): Promise<IdentificationResponse> {
+  const { data } = await apiClient.get<IdentificationResponse>(
+    `/api/v1/history/${requestId}`,
+    { signal },
+  );
   return data;
 }

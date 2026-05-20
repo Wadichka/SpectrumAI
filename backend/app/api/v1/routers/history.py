@@ -4,10 +4,15 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from app.api.v1.dependencies import get_history_service
-from app.api.v1.schemas import HistoryEntryResponse, PaginatedHistoryResponse
+from app.api.v1.schemas import (
+    ApiError,
+    HistoryEntryResponse,
+    IdentificationResponse,
+    PaginatedHistoryResponse,
+)
 from app.services.history import HistoryService
 
 router = APIRouter(tags=["history"])
@@ -49,3 +54,32 @@ def list_history(
         size=paginated.size,
         total=paginated.total,
     )
+
+
+@router.get(
+    "/history/{request_id}",
+    response_model=IdentificationResponse,
+    summary="Полный ответ /identify по сохранённой записи истории",
+)
+def get_history_detail(
+    request_id: int = Path(..., ge=1),
+    service: HistoryService = Depends(get_history_service),
+) -> IdentificationResponse:
+    """Восстанавливает полный сериализованный ответ /identify из БД.
+
+    Нужно UI: при открытии записи из истории ResultsPage подтягивает
+    свежие predictions/candidates/gradcam именно этой записи, а не
+    «последний живой» state из in-memory store. См. §20 фазы 2.
+    """
+    detail = service.get_by_id(request_id)
+    if detail is None or detail.result_payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ApiError(
+                code="NOT_FOUND",
+                message=f"identification request {request_id} не найден или без сохранённого payload",
+            ).model_dump(exclude_none=True),
+        )
+    payload = dict(detail.result_payload)
+    payload["request_id"] = detail.request_id
+    return IdentificationResponse.model_validate(payload)

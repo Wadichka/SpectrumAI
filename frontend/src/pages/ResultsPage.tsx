@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
+import { fetchHistoryDetail } from "@/api/history";
 import CandidateCard from "@/components/results/CandidateCard";
 import FunctionalGroupBadges from "@/components/results/FunctionalGroupBadges";
 import ResultsActions from "@/components/results/ResultsActions";
@@ -9,21 +10,64 @@ import SpectrumChart from "@/components/results/SpectrumChart";
 import Alert from "@/components/ui/Alert";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import Spinner from "@/components/ui/Spinner";
 import { useIdentificationStore } from "@/stores/useIdentificationStore";
 
 export default function ResultsPage() {
   const { t } = useTranslation();
+  const { requestId: requestIdParam } = useParams<{ requestId?: string }>();
   const response = useIdentificationStore((s) => s.lastResponse);
+  const lastRequestId = useIdentificationStore((s) => s.lastRequestId);
+  const setLastResponse = useIdentificationStore((s) => s.setLastResponse);
+  const setLastRequestId = useIdentificationStore((s) => s.setLastRequestId);
+
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCode, setSelectedCode] = useState<string | null>(
     response?.gradcam?.group_code ?? null,
   );
+
+  // Если в URL есть :requestId, который не совпадает с тем, что в сторе —
+  // подгружаем полный сохранённый ответ /identify из истории. Это закрывает
+  // баг: до фикса ResultsPage всегда показывал «последний live»-результат,
+  // независимо от того, какую запись юзер открыл из /history.
+  useEffect(() => {
+    if (!requestIdParam) return;
+    const requestId = Number(requestIdParam);
+    if (!Number.isFinite(requestId) || requestId <= 0) return;
+    if (lastRequestId === requestId && response) return;
+
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadError(null);
+    fetchHistoryDetail(requestId, controller.signal)
+      .then((detail) => {
+        setLastResponse(detail);
+        setLastRequestId(requestId);
+        setSelectedCode(detail.gradcam?.group_code ?? null);
+      })
+      .catch((err: unknown) => {
+        if ((err as Error)?.name === "CanceledError") return;
+        setLoadError(t("results.lost_session"));
+      })
+      .finally(() => setLoading(false));
+    return () => controller.abort();
+  }, [requestIdParam, lastRequestId, response, setLastResponse, setLastRequestId, t]);
 
   const sortedCandidates = useMemo(
     () => (response ? [...response.candidates].sort((a, b) => a.rank - b.rank) : []),
     [response],
   );
 
-  if (!response) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!response || loadError) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold text-ink">{t("results.title")}</h1>

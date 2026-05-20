@@ -45,13 +45,13 @@ async def identify(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ApiError(code="EMPTY_FILE", message="Файл пустой").model_dump(exclude_none=True),
         )
-    result = await service.identify_one(
+    result, request_id = await service.identify_one(
         file_bytes=file_bytes,
         filename=file.filename or "spectrum",
         include_gradcam=include_gradcam,
         top_k=top_k,
     )
-    return _to_response(result)
+    return _to_response(result, request_id=request_id)
 
 
 @router.post(
@@ -99,7 +99,11 @@ async def identify_batch(
     batch = await service.identify_batch(payloads, include_gradcam=include_gradcam, top_k=top_k)
     items: list[BatchIdentificationItemResponse] = []
     for item in batch.items:
-        result_dto = _to_response(item.result) if item.result is not None else None
+        result_dto = (
+            _to_response(item.result, request_id=item.request_id)
+            if item.result is not None
+            else None
+        )
         error_dto = (
             ApiError(code=item.error_code or "ERROR", message=item.error_message or "")
             if item.status == "error"

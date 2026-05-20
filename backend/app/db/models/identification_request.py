@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -33,6 +34,12 @@ class IdentificationRequest(Base):
     )
     processing_time_ms: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    # Полный сериализованный IdentificationResponse — нужен, чтобы исторические
+    # записи открывались с тем же содержимым (predictions/candidates/gradcam),
+    # что и в момент идентификации. См. §20 фазы 2 и DEVELOPMENT_PLAN.md.
+    result_payload: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON().with_variant(JSONB(), "postgresql"), nullable=True
+    )
 
     user: Mapped[User | None] = relationship(back_populates="requests")
     results: Mapped[list[IdentificationResult]] = relationship(
