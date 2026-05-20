@@ -6,7 +6,7 @@ from pipelines.training.contrastive_trainer import (
     ContrastiveTrainState,
 )
 from pipelines.training.seed import set_global_seed
-from pipelines.training.split import stratified_multilabel_split
+from pipelines.training.split import split_by_inchi_key, stratified_multilabel_split
 from pipelines.training.trainer import EpochStats, Trainer, TrainState
 
 __all__ = [
@@ -17,5 +17,6 @@ __all__ = [
     "TrainState",
     "Trainer",
     "set_global_seed",
+    "split_by_inchi_key",
     "stratified_multilabel_split",
 ]

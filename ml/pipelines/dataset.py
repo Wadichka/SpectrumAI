@@ -57,7 +57,7 @@ class SpectraDataset(Dataset[DatasetItem]):
         self._n_labels = n_labels
         self._return_smiles = return_smiles
 
-        missing = {"spectrum", "labels", "smiles", "compound_id"} - set(self._frame.columns)
+        missing = {"spectrum", "labels", "smiles"} - set(self._frame.columns)
         if missing:
             raise ValueError(f"в parquet не хватает колонок: {sorted(missing)}")
 
@@ -87,7 +87,13 @@ class SpectraDataset(Dataset[DatasetItem]):
     def get_metadata(self, idx: int) -> dict[str, object]:
         """Метаданные строки без преобразования в тензор."""
         row = self._frame.iloc[idx]
+        if "compound_id" in self._frame.columns:
+            compound_id = int(row["compound_id"])
+        elif "id" in self._frame.columns:
+            compound_id = int(row["id"])
+        else:
+            compound_id = int(idx)
         return {
             "smiles": cast(str, row["smiles"]),
-            "compound_id": int(row["compound_id"]),
+            "compound_id": compound_id,
         }

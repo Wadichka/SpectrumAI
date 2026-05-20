@@ -44,6 +44,7 @@ from pipelines.models.spectrum_tower import SpectrumTower  # noqa: E402
 from pipelines.training import (  # noqa: E402
     ContrastiveTrainer,
     set_global_seed,
+    split_by_inchi_key,
     stratified_multilabel_split,
 )
 
@@ -245,16 +246,37 @@ def main(argv: list[str] | None = None) -> None:
     data_cfg = cfg["data"]
     parquet_path = Path(data_cfg["parquet"]).resolve()
     labels = _load_label_matrix(parquet_path, int(data_cfg["n_labels"]))
-    train_idx, val_idx, test_idx = stratified_multilabel_split(
-        labels,
-        ratios=(
-            float(data_cfg["split"]["train"]),
-            float(data_cfg["split"]["val"]),
-            float(data_cfg["split"]["test"]),
-        ),
-        seed=seed,
+    split_cfg = data_cfg["split"]
+    split_strategy = str(split_cfg.get("strategy", "stratified_multilabel"))
+    ratios = (
+        float(split_cfg["train"]),
+        float(split_cfg["val"]),
+        float(split_cfg["test"]),
     )
-    log.info("split_done", train=len(train_idx), val=len(val_idx), test=len(test_idx))
+    if split_strategy == "by_inchi_key":
+        inchi_keys = pd.read_parquet(parquet_path, columns=["inchi_key"])["inchi_key"].tolist()
+        if len(inchi_keys) != labels.shape[0]:
+            raise ValueError(
+                f"inchi_key rows ({len(inchi_keys)}) != labels rows ({labels.shape[0]}); "
+                f"проверь parquet {parquet_path}"
+            )
+        train_idx, val_idx, test_idx = split_by_inchi_key(inchi_keys, ratios=ratios, seed=seed)
+    elif split_strategy == "stratified_multilabel":
+        train_idx, val_idx, test_idx = stratified_multilabel_split(
+            labels, ratios=ratios, seed=seed
+        )
+    else:
+        raise ValueError(
+            f"unknown data.split.strategy={split_strategy!r}; "
+            "supported: 'stratified_multilabel', 'by_inchi_key'"
+        )
+    log.info(
+        "split_done",
+        strategy=split_strategy,
+        train=len(train_idx),
+        val=len(val_idx),
+        test=len(test_idx),
+    )
 
     train_loader, val_loader = _build_loaders(cfg, train_idx=train_idx, val_idx=val_idx, rng=rng)
 
