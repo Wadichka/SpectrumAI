@@ -1,0 +1,45 @@
+{
+  "total_spectra": 1919,
+  "spectrum_length": 3601,
+  "n_groups": 25,
+  "positives_per_class": {
+    "alcohol_OH": 265,
+    "phenol_OH": 214,
+    "carbonyl": 884,
+    "aldehyde": 81,
+    "ketone": 223,
+    "carboxylic_acid": 253,
+    "ester": 230,
+    "amide_primary": 7,
+    "amide_secondary": 29,
+    "amide_tertiary": 125,
+    "amine_primary": 253,
+    "amine_secondary": 233,
+    "amine_tertiary": 287,
+    "nitrile": 128,
+    "nitro": 178,
+    "ether": 464,
+    "alkene": 213,
+    "alkyne": 55,
+    "aromatic_ring": 995,
+    "ch2_group": 1256,
+    "ch3_group": 1073,
+    "c_f_bond": 118,
+    "c_cl_bond": 163,
+    "sulfoxide_sulfone": 26,
+    "thiol_thioether": 199
+  },
+  "rare_classes": [
+    "amide_primary"
+  ],
+  "rare_class_threshold": 10,
+  "multi_label_density_mean": 4.14382490880667,
+  "labels_per_spectrum_distribution": {
+    "min": 1,
+    "max": 11,
+    "median": 4
+  },
+  "state_distribution": {
+    "unknown": 1919
+  }
+}
